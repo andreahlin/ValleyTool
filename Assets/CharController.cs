@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// todo: make taxi-cab movement 
-// todo: make it work in 3D 
+// todo: no falling over, and make it work with Nodes
 public class CharController : MonoBehaviour {
 
     Vector3 targetPosition;

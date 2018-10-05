@@ -7,50 +7,53 @@ public class Main : MonoBehaviour
 
     // goal: generate a path of cubes which a character will be able to traverse 
     public GameObject[] prefabCubes;
-    public List<Node> allNodes; 
-
-
+    public List<Node> allNodes = new List<Node>(); 
+    
     // Use this for initialization
     void Start()
     {
+        // find all prefab cubes in the scene
         if (prefabCubes.Length == 0)
         {
-            // finding all prefab cubes in the scene
             prefabCubes = GameObject.FindGameObjectsWithTag("PathCube"); 
         }
+        // assign a new top node to each prefab cube found in scene 
         foreach (GameObject curr in prefabCubes)
         {
-            Vector3 displace = new Vector3(0f, 0.5f, 0.5f);
+            Vector3 displace = new Vector3(0f, 0.5f, 0f);
             Node n = new Node("name", "top", curr.transform.position + displace, new Node[4]);
             allNodes.Add(n);
-            n.UpdateDebugPos(n.position); // showing the Node visualization 
-        }
-        foreach (Node curr in allNodes){
-            Debug.Log("Node Position: " + curr.position); 
         }
 
-        // assign neighbors for nodes 
-        //    for (int i = 1; i < 6; i++)
-        //    {
-        //        switch (i)
-        //        {
-        //            case 1:
-        //                nodeArray[i].neighbors = new Node[4] { null, nodeArray[2], null, nodeArray[0] };
-        //                break;
-        //            case 2:
-        //                nodeArray[i].neighbors = new Node[] { null, nodeArray[3], null, nodeArray[1] };
-        //                break;
-        //            case 3:
-        //                nodeArray[i].neighbors = new Node[] { null, nodeArray[4], null, nodeArray[2] };
-        //                break;
-        //            case 4:
-        //                nodeArray[i].neighbors = new Node[] { null, nodeArray[5], null, nodeArray[3] };
-        //                break;
-        //            case 5:
-        //                nodeArray[i].neighbors = new Node[] { null, null, null, nodeArray[4] };
-        //                break;
-        //        }
-        //    }
+        // todo: assign neighbors to nodes automatically! 
+        for (int i = 0; i < allNodes.Count; i++) 
+        {
+            Node curr = allNodes[i];
+
+            switch (i)
+            {
+                case 0:
+                    curr.neighbors = new Node[4] { null, allNodes[1], null, null};
+                    break;
+                case 1:
+                    curr.neighbors = new Node[4] { null, allNodes[2], null, allNodes[0]};
+                    break;
+                case 2:
+                    curr.neighbors = new Node[] { null, null, allNodes[3], allNodes[1] };
+                    break;
+                case 3:
+                    curr.neighbors = new Node[] { allNodes[2], null, allNodes[4], null};
+                    break;
+                case 4:
+                    curr.neighbors = new Node[] { allNodes[3], null, allNodes[5], null};
+                    break;
+                case 5:
+                    curr.neighbors = new Node[] { allNodes[4], null, allNodes[6], null };
+                    break;
+            }
+
+            curr.StartDebugVis(); 
+        }
     }
 
     // Update is called once per frame

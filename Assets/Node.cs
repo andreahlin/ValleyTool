@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Node : MonoBehaviour
+public class Node
 {
     public string id;
     public string face;
@@ -100,7 +100,16 @@ public class Node : MonoBehaviour
         {
             if (neighbors[i] != null)
             {
-                // should be called when there are neighbors 
+                //Debug.Log("hi");
+                // should be called when there are neighbors
+                visNeigh[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                visNeigh[i].transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+
+                MoveNeighVis(i);
+
+                Renderer rendN = visNeigh[i].GetComponent<Renderer>();
+                rendN.material = new Material(Shader.Find("Specular"));
+                rendN.material.SetColor("_Color", Color.magenta);
             }
             else
             {
@@ -119,19 +128,19 @@ public class Node : MonoBehaviour
 
 
     // updates the debug node based on changes in the face position
-    public void UpdateDebugPos(Vector3 p)
-    {
-        position = p;
-        if (visPos == null)
-        {
-            StartDebugVis();
-        }
-        else
-        {
-            visPos.transform.position = position;
-            for (int i = 0; i < 4; i++) MoveNeighVis(i);
-        }
-    }
+    //public void UpdateDebugPos(Vector3 p)
+    //{
+    //    position = p;
+    //    if (visPos == null)
+    //    {
+    //        StartDebugVis();
+    //    }
+    //    else
+    //    {
+    //        visPos.transform.position = position;
+    //        for (int i = 0; i < 4; i++) MoveNeighVis(i);
+    //    }
+    //}
 
     // Use this for initialization
     void Start()
