@@ -4,31 +4,32 @@ using UnityEngine;
 
 public class Node : MonoBehaviour
 {
-
     public string id;
     public string face;
-    public Vector3 position = new Vector3(4, 4, 4); // position of center of face, not center of cube 
+    public Vector3 position; // position of center of face, not center of cube 
     public Node[] neighbors = new Node[4]; // node or null // [N, W, S, E] 
-
-    // belongs to just this class  
-    private GameObject visPos = null;
-    private GameObject[] visNeigh = new GameObject[] { null, null, null, null };
+    private GameObject visPos;
+    private GameObject[] visNeigh = new GameObject[4];
 
     // constructors
     public Node()
     {
-        id = "n-1";
+        id = " ";
         face = "top";
         position = new Vector3(0, 0, 0);
-        neighbors = new Node[] { null, null, null, null };
+        neighbors = new Node[4];
+        visPos = null;
+        visNeigh = new GameObject[4]; 
     }
 
-    public Node(string iden, string f, Vector3 pos, Node[] neigh)
+    public Node(string id, string face, Vector3 position, Node[] neighbors)
     {
-        id = iden;
-        face = f;
-        position = pos;
-        neighbors = neigh;
+        this.id = id;
+        this.face = face;
+        this.position = position;
+        this.neighbors = neighbors;
+        visPos = null;
+        visNeigh = new GameObject[4];
     }
 
     public void MoveNeighVis(int i)
@@ -89,6 +90,7 @@ public class Node : MonoBehaviour
         visPos.transform.position = position;
         visPos.name = "vis0-pos";
         visPos.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
+        //visPos.AddComponent<Light>(); 
         Renderer rend = visPos.GetComponent<Renderer>();
         rend.material = new Material(Shader.Find("Specular"));
         rend.material.SetColor("_Color", Color.blue);
@@ -141,14 +143,13 @@ public class Node : MonoBehaviour
     {
     }
 
-    void OnDrawGizmos()
-    {
-        //Debug.Log("n" + neighbors[0]); 
-        //Gizmos.color = Color.black;
+    //private void OnDrawGizmos()
+    //{
+    //    Gizmos.color = Color.blue;
+    //    Gizmos.DrawWireSphere(position, 1f);
 
-        //Gizmos.DrawSphere(position, 1f);
+    //    //Gizmos.DrawCube(position + new Vector3(0,0.5f,0), new Vector3(1,1,1));
+    //    //UpdateDebugPos(new Vector3(0,0,0));
+    //}
 
-        //Gizmos.DrawCube(position + new Vector3(0,0.5f,0), new Vector3(1,1,1));
-        //UpdateDebugPos(new Vector3(0,0,0));
-    }
 }
