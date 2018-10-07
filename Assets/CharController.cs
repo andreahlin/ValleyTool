@@ -8,8 +8,8 @@ public class CharController : MonoBehaviour {
     Vector3 targetPosition;
     Vector3 lookTarget;
     Quaternion playerRot;
-    float rotSpeed = 5f;
-    float speed = 10f;
+    public float rotSpeed = 5f;
+    public float speed = 3f;
     bool moving = false;
 
 	// Use this for initialization
@@ -32,18 +32,18 @@ public class CharController : MonoBehaviour {
         // raycasting to find the position of mouseclick 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-
         if (Physics.Raycast(ray, out hit, 10000))
         {
             targetPosition = hit.point;
 
             // todo: this is a hard-coded value : bad 
-            targetPosition.y = 0.5f; 
+            targetPosition.y = 0.5f;
 
             lookTarget = new Vector3(targetPosition.x - transform.position.x,
-                                     transform.position.y,
+                                     transform.position.y, // shouldn't this ensure that the rotation doesn't change for the y axis?
                                      targetPosition.z - transform.position.z);
             playerRot = Quaternion.LookRotation(lookTarget);
+
             moving = true;
         }
     }
@@ -58,7 +58,7 @@ public class CharController : MonoBehaviour {
         transform.position = Vector3.MoveTowards(transform.position,
                                                  targetPosition,
                                                  speed * Time.deltaTime);
-
+                                                 
         if (transform.position == targetPosition)
         {
             moving = false;

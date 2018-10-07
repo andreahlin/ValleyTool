@@ -18,6 +18,7 @@ public class Main : MonoBehaviour
             prefabCubes = GameObject.FindGameObjectsWithTag("PathCube"); 
         }
         // assign a new top node to each prefab cube found in scene 
+        // todo: assign new Nodes on geometry automatically !  
         foreach (GameObject curr in prefabCubes)
         {
             Vector3 displace = new Vector3(0f, 0.5f, 0f);
@@ -25,33 +26,12 @@ public class Main : MonoBehaviour
             allNodes.Add(n);
         }
 
-        // todo: assign neighbors to nodes automatically! 
+        // todo: assign neighbors to nodes automatically
         for (int i = 0; i < allNodes.Count; i++) 
         {
             Node curr = allNodes[i];
 
-            switch (i)
-            {
-                case 0:
-                    curr.neighbors = new Node[4] { null, allNodes[1], null, null};
-                    break;
-                case 1:
-                    curr.neighbors = new Node[4] { null, allNodes[2], null, allNodes[0]};
-                    break;
-                case 2:
-                    curr.neighbors = new Node[] { null, null, allNodes[3], allNodes[1] };
-                    break;
-                case 3:
-                    curr.neighbors = new Node[] { allNodes[2], null, allNodes[4], null};
-                    break;
-                case 4:
-                    curr.neighbors = new Node[] { allNodes[3], null, allNodes[5], null};
-                    break;
-                case 5:
-                    curr.neighbors = new Node[] { allNodes[4], null, allNodes[6], null };
-                    break;
-            }
-
+            curr.findGeomNeighbors(allNodes); 
             curr.StartDebugVis(); 
         }
     }
