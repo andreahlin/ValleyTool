@@ -4,51 +4,34 @@ using UnityEngine;
 
 public class Node
 {
-    public string id;
+    public int id;
     public string face;
-    public Vector3 position; // position of center of face, not center of cube 
-    public Node[] neighbors; // node or null // [N, W, S, E] 
-
-    public Vector3[] boundaries; // will hold the boundary points for each of the things  
-    public List<Node> neighList;  // todo: decide to keep either the array OR the list 
-
-    private GameObject visPos;
-    //private GameObject[] visNeigh = new GameObject[4];
+    public Vector3 position; // position of center of face 
+    public Vector3[] boundaries;  
+    public List<Node> neighList;
 
     // constructors
     public Node()
     {
-        id = " ";
+        id = -1;
         face = "top";
         position = new Vector3(0, 0, 0);
-        neighbors = new Node[4];
-
         neighList = new List<Node>();
         boundaries = new Vector3[4];
-
-        visPos = null;
-        //visNeigh = new GameObject[4];
-
-        setBoundaries(); 
+        SetBoundaries(); 
     }
 
-    public Node(string id, string face, Vector3 position, Node[] neighbors)
+    public Node(int id, string face, Vector3 position)
     {
         this.id = id;
         this.face = face;
         this.position = position;
-        this.neighbors = neighbors;
-
         neighList = new List<Node>();
         boundaries = new Vector3[4];
-
-        visPos = null;
-        //visNeigh = new GameObject[4];
-
-        setBoundaries();
+        SetBoundaries();
     }
 
-    public void setBoundaries() 
+    public void SetBoundaries() 
     {
         switch (face) 
         {
@@ -71,7 +54,7 @@ public class Node
     }
 
     // find neighbors that are next to the cube.
-    public void findGeomNeighbors(List<Node> nodeList)
+    public void FindGeomNeighbors(List<Node> nodeList)
     {
         // if the boundary points are touching, then add as neighbor 
         foreach (Node n in nodeList)
@@ -98,31 +81,38 @@ public class Node
         }
     }
 
-    // todo: make the sphere not a rigid body so that it won't be playable? but the cube must be a rigidbody .. ? right  
     public void StartDebugVis()
     {
-        // create position sphere vis
-        visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        // show position sphere vis
+        GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         visPos.transform.position = position;
-        visPos.name = "vis0-pos";
+        visPos.name = id.ToString();
         visPos.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
         (visPos.GetComponent(typeof(SphereCollider)) as Collider).enabled = false;
+        GameObject container = GameObject.Find("DebugGeom");
+        visPos.transform.SetParent(container.transform, true);
+
         Renderer rend = visPos.GetComponent<Renderer>();
         rend.material = new Material(Shader.Find("Specular"));
         rend.material.SetColor("_Color", Color.blue);
 
-        // show boundaries of all cubes   
+        // todo: take this out later? don't know if it's necessary 
+        System.Type mType = System.Type.GetType("NodeVisualizer");
+        visPos.AddComponent(mType);
+
+        // show boundaries   
         for (int i = 0; i < 4; i++){
             GameObject boundVis = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            boundVis.transform.position = boundaries[i];
+            boundVis.transform.localPosition = boundaries[i];
             boundVis.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             (boundVis.GetComponent(typeof(BoxCollider)) as Collider).enabled = false;
+            boundVis.transform.SetParent(visPos.transform, true); 
             Renderer rend1 = boundVis.GetComponent<Renderer>();
             rend1.material = new Material(Shader.Find("Specular"));
             rend1.material.SetColor("_Color", Color.blue);
         }
 
-        // todo: show the neighbors
+        // show neighbors
         foreach(Node n in neighList)
         {
             if (!this.Equals(n))
@@ -135,11 +125,12 @@ public class Node
                         // todo: double checking things?
                         if (boundaries[i] == n.boundaries[j])
                         {
-                            GameObject boundVis = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                            boundVis.transform.position = boundaries[i];
-                            boundVis.transform.localScale = new Vector3(0.11f, 0.11f, 0.11f);
-                            (boundVis.GetComponent(typeof(BoxCollider)) as Collider).enabled = false;
-                            Renderer rend1 = boundVis.GetComponent<Renderer>();
+                            GameObject neighVis = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                            neighVis.transform.localPosition = boundaries[i];
+                            neighVis.transform.localScale = new Vector3(0.11f, 0.11f, 0.11f);
+                            (neighVis.GetComponent(typeof(BoxCollider)) as Collider).enabled = false;
+                            neighVis.transform.SetParent(visPos.transform, true);
+                            Renderer rend1 = neighVis.GetComponent<Renderer>();
                             rend1.material = new Material(Shader.Find("Specular"));
                             rend1.material.SetColor("_Color", Color.green);
                             break;
@@ -147,81 +138,6 @@ public class Node
                     }
                 }
             }
-
         }
     }
-
-    // Use this for initialization
-    void Start()
-    {
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-    }
-
-    // updates the debug node based on changes in the face position
-    //public void UpdateDebugPos(Vector3 p)
-    //{
-    //    position = p;
-    //    if (visPos == null)
-    //    {
-    //        StartDebugVis();
-    //    }
-    //    else
-    //    {
-    //        visPos.transform.position = position;
-    //        for (int i = 0; i < 4; i++) MoveNeighVis(i);
-    //    }
-    //}
-
-    //public void MoveNeighVis(int i)
-    //{
-    //    switch (face)
-    //    {
-    //        case "top":
-    //            switch (i)
-    //            {
-    //                // North is in the +x direction, counterclockwise 
-    //                case 0:
-    //                    visNeigh[i].name = "vis0-0";
-    //                    visNeigh[i].transform.position = position + new Vector3(0.5f, 0, 0);
-    //                    break;
-    //                case 1:
-    //                    visNeigh[i].name = "vis0-1";
-    //                    visNeigh[i].transform.position = position + new Vector3(0, 0, 0.5f);
-    //                    break;
-    //                case 2:
-    //                    visNeigh[i].name = "vis0-2";
-    //                    visNeigh[i].transform.position = position + new Vector3(-0.5f, 0, 0);
-    //                    break;
-    //                case 3:
-    //                    visNeigh[i].name = "vis0-3";
-    //                    visNeigh[i].transform.position = position + new Vector3(0, 0, -0.5f);
-    //                    break;
-    //            }
-    //            break;
-    //        case "bottom":
-    //            switch (i)
-    //            {
-    //                case 0:
-    //                    break;
-    //                case 1:
-    //                    break;
-    //                case 2:
-    //                    break;
-    //                case 3:
-    //                    break;
-    //            }
-    //            break;
-    //        case "north":
-    //        case "east":
-    //        case "south":
-    //        case "west":
-    //            break;
-    //        default:
-    //            break;
-    //    }
-    //}
 }
