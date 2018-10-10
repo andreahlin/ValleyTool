@@ -10,6 +10,9 @@ public class Node
     public Vector3[] boundaries;  
     public List<Node> neighList;
 
+    public Vector3 up;
+    public Vector3 right; 
+
     // constructors
     public Node()
     {
@@ -18,16 +21,20 @@ public class Node
         position = new Vector3(0, 0, 0);
         neighList = new List<Node>();
         boundaries = new Vector3[4];
+        up = new Vector3(0, 1, 0);
+        right = new Vector3(1, 0, 0); 
         SetBoundaries(); 
     }
 
-    public Node(int id, string face, Vector3 position)
+    public Node(int id, string face, Vector3 position, Vector3 upVec, Vector3 rightVec)
     {
         this.id = id;
         this.face = face;
         this.position = position;
         neighList = new List<Node>();
         boundaries = new Vector3[4];
+        up = upVec;
+        right = rightVec; 
         SetBoundaries();
     }
 
@@ -36,17 +43,30 @@ public class Node
         switch (face) 
         {
             case "top":
-                boundaries[0] = position + new Vector3(0.5f, 0, 0);
-                boundaries[1] = position + new Vector3(0, 0, 0.5f);
-                boundaries[2] = position + new Vector3(-0.5f, 0, 0);
-                boundaries[3] = position + new Vector3(0, 0, -0.5f);
+                boundaries[0] = position + 0.5f * right;
+                boundaries[1] = position - 0.5f * Vector3.Cross(up, right);
+                boundaries[2] = position - 0.5f * right;
+                boundaries[3] = position + 0.5f * Vector3.Cross(up, right);
                 break;
-            case "bottom":
+            case "negx":
+                boundaries[0] = position + 0.5f * right;
+                boundaries[1] = position - 0.5f * Vector3.Cross(up, right);
+                boundaries[2] = position - 0.5f * right;
+                boundaries[3] = position + 0.5f * Vector3.Cross(up, right);
                 break;
-            case "north":
-            case "east":
-            case "south":
-            case "west":
+            case "negz":
+                boundaries[0] = position + 0.5f * right;
+                boundaries[1] = position - 0.5f * Vector3.Cross(up, right);
+                boundaries[2] = position - 0.5f * right;
+                boundaries[3] = position + 0.5f * Vector3.Cross(up, right);
+                break;
+            case "diagx":
+                boundaries[0] = position + (Mathf.Sqrt(2f) / 2f) * right;
+                boundaries[1] = position - 0.5f * Vector3.Cross(up, right); 
+                boundaries[2] = position - (Mathf.Sqrt(2f) / 2f) * right;
+                boundaries[3] = position + 0.5f * Vector3.Cross(up, right);
+                break;
+            case "diagz":
                 break;
             default:
                 break;
@@ -97,7 +117,7 @@ public class Node
         rend.material.SetColor("_Color", Color.blue);
 
         // todo: take this out later? don't know if it's necessary 
-        System.Type mType = System.Type.GetType("NodeVisualizer");
+        System.Type mType = System.Type.GetType("NodeInfoVis");
         visPos.AddComponent(mType);
 
         // show boundaries   
