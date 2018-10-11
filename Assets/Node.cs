@@ -7,11 +7,14 @@ public class Node
     public int id;
     public string face;
     public Vector3 position; // position of center of face 
+    public Vector3 up;
+    public Vector3 right;
     public Vector3[] boundaries;  
     public List<Node> neighList;
 
-    public Vector3 up;
-    public Vector3 right; 
+    public float hCost = 0; // todo: assign later 
+    public float gCost = 0; // todo: assign later
+    public Node comesFrom = null; 
 
     // constructors
     public Node()
@@ -37,6 +40,18 @@ public class Node
         right = rightVec; 
         SetBoundaries();
     }
+
+    // for testing purposes only 
+    public Node(int i)
+    {
+        hCost = i;
+    }
+
+    public float Fcost()
+    {
+        return hCost + gCost;
+    }
+
 
     public void SetBoundaries() 
     {
@@ -67,8 +82,10 @@ public class Node
                 boundaries[3] = position + 0.5f * Vector3.Cross(up, right);
                 break;
             case "diagz":
-                break;
-            default:
+                boundaries[0] = position + (Mathf.Sqrt(2f) / 2f) * right;
+                boundaries[1] = position - 0.5f * Vector3.Cross(up, right);
+                boundaries[2] = position - (Mathf.Sqrt(2f) / 2f) * right;
+                boundaries[3] = position + 0.5f * Vector3.Cross(up, right);
                 break;
         }
     }
@@ -79,7 +96,7 @@ public class Node
         // if the boundary points are touching, then add as neighbor 
         foreach (Node n in nodeList)
         {
-            if (Vector3.Distance(this.position, n.position) <= 1f)
+            if (Vector3.Distance(this.position, n.position) <= 1.5f) // handle the diagonal case
             {
                 if (!this.Equals(n))
                 {

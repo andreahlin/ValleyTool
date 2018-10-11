@@ -12,7 +12,6 @@ public class NodeInfoVis : MonoBehaviour {
     void Start()
     {
         int idVal;
-        // parse the string name to int
         if (!int.TryParse(this.name, out idVal)) idVal = -1;
         pos = this.transform.position;
 
