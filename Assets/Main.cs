@@ -63,7 +63,7 @@ public class Main : MonoBehaviour
         foreach (Node node in allNodes)
         {
             node.FindGeomNeighbors(allNodes);
-            node.StartDebugVis();
+            //node.StartDebugVis();
 
         }
 
@@ -113,41 +113,41 @@ public class Main : MonoBehaviour
         //while(h.heapSize > 0) Debug.Log(h.ExtractMin().Fcost());
 
         //////////////// a* testing //////////////////
-        Graph g = new Graph(allNodes);
-        int a = 1;
-        int b = 2;
-        List<Node> path = g.AStar(g.GetNodeById(a), g.GetNodeById(b));
+        //Graph g = new Graph(allNodes);
+        //int a = 10;
+        //int b = 5;
+        //List<Node> path = g.AStar(g.GetNodeById(a), g.GetNodeById(b));
 
-        string outputPath = "( "; 
+        //string outputPath = "( "; 
 
-        // visualization 
-        foreach (Node n in path) 
-        {
-            outputPath += n.id + " ";
-            if (!(n.Equals(g.GetNodeById(a)) || n.Equals(g.GetNodeById(b))))
-            {
-                GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                visPos.transform.position = n.position;
-                visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-                Renderer rend = visPos.GetComponent<Renderer>();
-                //rend.material = new Material(Shader.Find("Specular"));
-                rend.material.SetColor("_Color", Color.green);
-            }
-        }
-        GameObject v2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        v2.transform.position = g.GetNodeById(a).position;
-        v2.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
-        Renderer rend2 = v2.GetComponent<Renderer>();
-        rend2.material.SetColor("_Color", new Color(1f, 109 / 255.0f, 25 / 255.0f));
+        //// visualization 
+        //foreach (Node n in path) 
+        //{
+        //    outputPath += n.id + " ";
+        //    if (!(n.Equals(g.GetNodeById(a)) || n.Equals(g.GetNodeById(b))))
+        //    {
+        //        GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //        visPos.transform.position = n.position;
+        //        visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+        //        Renderer rend = visPos.GetComponent<Renderer>();
+        //        //rend.material = new Material(Shader.Find("Specular"));
+        //        rend.material.SetColor("_Color", Color.green);
+        //    }
+        //}
+        //GameObject v2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //v2.transform.position = g.GetNodeById(a).position;
+        //v2.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
+        //Renderer rend2 = v2.GetComponent<Renderer>();
+        //rend2.material.SetColor("_Color", Color.green); // new Color(1f, 109 / 255.0f, 25 / 255.0f));
 
-        v2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        v2.transform.position = g.GetNodeById(b).position;
-        v2.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
-        rend2 = v2.GetComponent<Renderer>();
-        rend2.material.SetColor("_Color", Color.red);
+        //v2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //v2.transform.position = g.GetNodeById(b).position;
+        //v2.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
+        //rend2 = v2.GetComponent<Renderer>();
+        //rend2.material.SetColor("_Color", Color.red);
 
 
-        Debug.Log("Path: " + outputPath + ")"); 
+        //Debug.Log("Path: " + outputPath + ")"); 
     }
 
     // Update is called once per frame
