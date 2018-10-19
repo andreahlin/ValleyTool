@@ -9,6 +9,12 @@ public class Main : MonoBehaviour
     public GameObject[] pathFaces;
     public List<Node> allNodes = new List<Node>();
 
+    GameObject thePlayer;
+    CharController playerScript;
+
+    Graph g;
+
+
     public bool debugMode = true; 
     
     // Use this for initialization
@@ -43,14 +49,14 @@ public class Main : MonoBehaviour
             }
             else if (normal.x > epsilon || normal.x < -epsilon)
             {
-                if (normal.y > epsilon || normal.y < epsilon) 
+                if (normal.y > 0) 
                 {
                     n = new Node(i, "diagx", face.transform.position, face.transform.up, face.transform.right);
                 }
             }
             else if (normal.z > epsilon || normal.z < -epsilon)
             {
-                if (normal.y > epsilon || normal.y < epsilon)
+                if (normal.y > 0)
                 {
                     n = new Node(i, "diagz", face.transform.position, face.transform.up, face.transform.right);
                 }
@@ -63,9 +69,19 @@ public class Main : MonoBehaviour
         foreach (Node node in allNodes)
         {
             node.FindGeomNeighbors(allNodes);
-            //node.StartDebugVis();
+            node.StartDebugVis();
 
         }
+
+        // create a graph for later use
+        g = new Graph(allNodes);
+
+        // referencing the character variable todo idk if this should be here ? 
+        thePlayer = GameObject.Find("Character");
+        playerScript = thePlayer.GetComponent<CharController>();
+        playerScript.AssignCurrNode(allNodes);
+
+
 
         //if (debugMode) //todo add back in idk why not working 
         //{
@@ -114,8 +130,8 @@ public class Main : MonoBehaviour
 
         //////////////// a* testing //////////////////
         //Graph g = new Graph(allNodes);
-        //int a = 10;
-        //int b = 5;
+        //int a = 15;
+        //int b = 12;
         //List<Node> path = g.AStar(g.GetNodeById(a), g.GetNodeById(b));
 
         //string outputPath = "( "; 
@@ -146,12 +162,33 @@ public class Main : MonoBehaviour
         //rend2 = v2.GetComponent<Renderer>();
         //rend2.material.SetColor("_Color", Color.red);
 
-
         //Debug.Log("Path: " + outputPath + ")"); 
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetMouseButton(0)) // todo comment all this back in? 
+        {
+            playerScript.SetTargetPosition(allNodes);
+
+            // CALL PATHFINDING 
+            List<Node> path = g.AStar(playerScript.currNode, playerScript.targetNode);
+
+            // USE THAT TO DIRECT THE PATH OF THE CHARACTER
+            playerScript.WalkAlongPath(path); 
+
+        }
+        //if (Input.GetMouseButton(0)) 
+        //{
+        //    SetTargetPosition();
+
+        //}
+        //if (moving) 
+        //{
+        //    Move();
+        //}
+
+
     }
 }

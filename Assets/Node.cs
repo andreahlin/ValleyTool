@@ -13,7 +13,7 @@ public class Node
     public List<Node> neighList;
 
     public float hCost = 0; // todo: assign later 
-    public float gCost = 0; // todo: assign later
+    public float gCost = 1; // todo: assign later
     public Node comesFrom = null; 
 
     // constructors
@@ -93,6 +93,8 @@ public class Node
     // find neighbors that are next to the cube.
     public void FindGeomNeighbors(List<Node> nodeList)
     {
+        // todo: use epsilon 
+        float epsilon = 0.01f;
         // if the boundary points are touching, then add as neighbor 
         foreach (Node n in nodeList)
         {
@@ -105,7 +107,7 @@ public class Node
                     {
                         for (int j = 0; j < 4; j++)
                         {
-                            // todo: double checking things?
+                            // todo: optimize
                             if (boundaries[i] == n.boundaries[j])
                             {
                                 neighList.Add(n);
@@ -177,4 +179,6 @@ public class Node
             }
         }
     }
+
+
 }
