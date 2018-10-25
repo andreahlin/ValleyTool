@@ -133,30 +133,15 @@ public class Node
             //float thisx = thisScreenPos.x / cam.pixelWidth;
             //float thisy = thisScreenPos.y / cam.pixelHeight; 
 
-            if (Vector2.Distance(p1, p2) < 0.025) 
+            if (Vector2.Distance(p1, p2) < 0.03) //0.05) 
             {
-                //Debug.Log("here"); 
                 // make sure they are not already neighbors
                 if (!this.neighList.Contains(n) && !this.Equals(n)) 
                 {
-                    //Debug.Log("really here!"); 
                     neighList.Add(n);
                 }
             }
-
-            //Debug.Log("(" + x + ", " + y + ")"); // how is this calculated? 
         }
-
-        //Debug.Log(this.position);
-        //if (Vector3.Distance(this.position, new Vector3(7,2,12)) < 0.05)
-        //{
-        //    foreach (Node n in neighList)
-        //    {
-        //        Debug.Log(n.position); 
-        //    }
-        //}
-
-
     }
 
     public void StartDebugVis(Camera cam)
@@ -195,14 +180,11 @@ public class Node
         {
             if (!this.Equals(n))
             {
-                Debug.Log(position);
-
                 // check each boundary
                 for (int i = 0; i < 4; i++)
                 {
                     for (int j = 0; j < 4; j++)
                     {
-                        // todo: double checking things
                         if (Vector3.Distance(boundaries[i], n.boundaries[j]) < 0.01)
                         {
                             GameObject neighVis = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -216,14 +198,14 @@ public class Node
                             break;
                         }
 
-                        // debug render the impossible connection - screen space 
+                        // debug render the impossible connection - using screen space 
                         Vector3 p1 = cam.WorldToScreenPoint(n.boundaries[j]);
                         Vector2 b1 = new Vector2(p1.x / cam.pixelWidth, p1.y / cam.pixelHeight);
 
                         Vector3 p2 = cam.WorldToScreenPoint(boundaries[i]);
                         Vector2 b2 = new Vector2(p2.x / cam.pixelWidth, p2.y / cam.pixelHeight);
 
-                        if (Vector2.Distance(b1, b2) < 0.01 && Vector3.Distance(boundaries[i], n.boundaries[j]) > 0.01)
+                        if (Vector2.Distance(b1, b2) < 0.01 && Vector3.Distance(boundaries[i], n.boundaries[j]) > 0.1)
                         {
                             GameObject neighVis = GameObject.CreatePrimitive(PrimitiveType.Cube);
                             neighVis.transform.position = boundaries[i];

@@ -12,11 +12,9 @@ public class Main : MonoBehaviour
     GameObject thePlayer;
     CharController playerScript;
     Camera cam; 
-
     Graph g;
 
-
-    public bool debugMode = true; 
+    public bool debugMode = true; // todo: not using right now 
     
     // Use this for initialization
     void Start()
@@ -35,7 +33,7 @@ public class Main : MonoBehaviour
         {
             
             GameObject face = pathFaces[i];
-            Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the right normal? should be 
+            Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
             Node n = new Node(i, "top", face.transform.position, face.transform.up, face.transform.right);  
             float epsilon = 0.01f; 
 
@@ -84,14 +82,6 @@ public class Main : MonoBehaviour
         thePlayer = GameObject.Find("Character");
         playerScript = thePlayer.GetComponent<CharController>();
         playerScript.AssignCurrNode(allNodes);
-
-        //if (debugMode) //todo add back in idk why not working 
-        //{
-        //    foreach (Node node in allNodes)
-        //    {
-        //        node.StartDebugVis();
-        //    }
-        //}
 
         ///////////// connected component graph testing ///////////////
         //Graph g = new Graph(allNodes);
@@ -170,6 +160,7 @@ public class Main : MonoBehaviour
         // Update is called once per frame
         void Update()
     {
+        // character movement  
         if (Input.GetMouseButtonUp(0)) // when mouseclick is released (once per click)
         {
             playerScript.SetTargetPosition(allNodes);
@@ -179,6 +170,7 @@ public class Main : MonoBehaviour
 
             // USE THAT TO DIRECT THE PATH OF THE CHARACTER
             playerScript.WalkAlongPath(path); 
+            //StartCoroutine(playerScript.WalkAlongPath2(path));
 
         }
     }

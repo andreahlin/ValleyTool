@@ -56,16 +56,14 @@ public class CharController : MonoBehaviour {
         // throw error if no current node is found ... stop game? 
 
         // color the current node red (todo: get rid of) 
-        GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        visPos.transform.position = currNode.position;
-        visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-        Renderer rend = visPos.GetComponent<Renderer>();
-        rend.material.SetColor("_Color", Color.black);
+        //GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //visPos.transform.position = currNode.position;
+        //visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+        //Renderer rend = visPos.GetComponent<Renderer>();
+        //rend.material.SetColor("_Color", Color.black);
 
         // find the nearest Node to the mouse click (in another function rn) 
-
         // run pathfinding and find the path list
-
         // move through the path list Node by Node until character reaches target
 
     }
@@ -74,37 +72,50 @@ public class CharController : MonoBehaviour {
     {
         foreach (Node nextNode in path)
         {
-             //color the closest Node from mouse click (todo: get rid of debugvis) 
-            //GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            //visPos.transform.position = nextNode.position;
-            //visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-            //Renderer rend = visPos.GetComponent<Renderer>();
-            //rend.material.SetColor("_Color", Color.red);
-
             if (!nextNode.Equals(path[0])) 
             {
                 Vector3 truePos = nextNode.position + nextNode.up * 0.5f;
                 while (!(Vector3.Distance(transform.position, truePos) < 0.01f))
                 {
-
                     Vector3 nextPos = truePos;
-                    // only hitting the CUBE, not the face 
-                    transform.position = Vector3.MoveTowards(transform.position,
-                    nextPos,
-                    0.01f * Time.deltaTime);
-                    //transform.position = Vector3.Lerp(transform.position, nextPos, speed * Time.deltaTime); // todo: figure out how to slow dis down! 
+                    // todo: figure out how to slow dis down!
+                    transform.position = Vector3.MoveTowards(transform.position, 
+                                                             nextPos,
+                                                             0.01f * Time.deltaTime);
                 }
             }
         }
-
-        // update the current node for the next path taken 
+        // update the current node for the next path  
         if (path.Count > 0) 
         {
             currNode = path[path.Count - 1];
         }
-
     }
 
+   public IEnumerator WalkAlongPath2(List<Node> path)
+    {
+        foreach (Node nextNode in path)
+        {
+            if (!nextNode.Equals(path[0]))
+            {
+                Vector3 truePos = nextNode.position + nextNode.up * 0.5f;
+                while (!(Vector3.Distance(transform.position, truePos) < 0.01f))
+                {
+                    Vector3 nextPos = truePos;
+                    // todo: figure out how to slow dis down!
+                    yield return new WaitForSeconds(0.0f);
+                    transform.position = Vector3.MoveTowards(transform.position,
+                                                             nextPos,
+                                                             0.01f * Time.deltaTime);
+                }
+            }
+        }
+        // update the current node for the next path  
+        if (path.Count > 0)
+        {
+            currNode = path[path.Count - 1];
+        }
+    }
 
     public void SetTargetPosition(List<Node> nodesInScene) {
         // raycasting to find the position of mouseclick 
@@ -113,11 +124,6 @@ public class CharController : MonoBehaviour {
         if (Physics.Raycast(ray, out hit, 10000))
         {
             targetPosition = hit.point;
-            //Debug.DrawLine(ray.origin, hit.point);
-            //Debug.Log("the object hit: " + hit.transform.gameObject.transform);
-
-            // todo: this is a hard-coded value : bad 
-            //targetPosition.y = 0.5f;
 
             lookTarget = new Vector3(targetPosition.x - transform.position.x,
                                      transform.position.y, // shouldn't this ensure that the rotation doesn't change for the y axis?
@@ -142,13 +148,14 @@ public class CharController : MonoBehaviour {
                 }
             }
         }
+
         // debug vis for clicked Node
         // color the closest Node from mouse click (todo: get rid of debugvis) 
-        GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        visPos.transform.position = targetNode.position;
-        visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-        Renderer rend = visPos.GetComponent<Renderer>();
-        rend.material.SetColor("_Color", Color.yellow);
+        //GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //visPos.transform.position = targetNode.position;
+        //visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+        //Renderer rend = visPos.GetComponent<Renderer>();
+        //rend.material.SetColor("_Color", Color.yellow);
     }
 
     void Move()
