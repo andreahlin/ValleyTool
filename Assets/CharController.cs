@@ -53,6 +53,8 @@ public class CharController : MonoBehaviour {
             }
         }
 
+        // throw error if no current node is found ... stop game? 
+
         // color the current node red (todo: get rid of) 
         GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         visPos.transform.position = currNode.position;

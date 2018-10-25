@@ -123,14 +123,43 @@ public class Node
         foreach (Node n in nodeList)
         {
             // find the world to screen point 
-            //Vector3 screenPos = cam.WorldToScreenPoint(n.position);
-            //Debug.Log(screenPos); // how is this calculated? 
+            Vector3 screenPos = cam.WorldToScreenPoint(n.position);
+            Vector2 p1 = new Vector2(screenPos.x / cam.pixelWidth, screenPos.y / cam.pixelHeight);
+            //float x = screenPos.x / cam.pixelWidth; // NORMALIZED VALUE
+            //float y = screenPos.y / cam.pixelHeight;
+
+            Vector3 thisScreenPos = cam.WorldToScreenPoint(this.position);
+            Vector2 p2 = new Vector2(thisScreenPos.x / cam.pixelWidth, thisScreenPos.y / cam.pixelHeight); 
+            //float thisx = thisScreenPos.x / cam.pixelWidth;
+            //float thisy = thisScreenPos.y / cam.pixelHeight; 
+
+            if (Vector2.Distance(p1, p2) < 0.025) 
+            {
+                //Debug.Log("here"); 
+                // make sure they are not already neighbors
+                if (!this.neighList.Contains(n) && !this.Equals(n)) 
+                {
+                    //Debug.Log("really here!"); 
+                    neighList.Add(n);
+                }
+            }
+
+            //Debug.Log("(" + x + ", " + y + ")"); // how is this calculated? 
         }
+
+        //Debug.Log(this.position);
+        //if (Vector3.Distance(this.position, new Vector3(7,2,12)) < 0.05)
+        //{
+        //    foreach (Node n in neighList)
+        //    {
+        //        Debug.Log(n.position); 
+        //    }
+        //}
 
 
     }
 
-    public void StartDebugVis()
+    public void StartDebugVis(Camera cam)
     {
         // show position sphere vis
         GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -162,20 +191,42 @@ public class Node
         }
 
         // show neighbors
-        foreach(Node n in neighList)
+        foreach (Node n in neighList)
         {
             if (!this.Equals(n))
             {
+                Debug.Log(position);
+
                 // check each boundary
                 for (int i = 0; i < 4; i++)
                 {
                     for (int j = 0; j < 4; j++)
                     {
-                        // todo: double checking things?
-                        if (boundaries[i] == n.boundaries[j])
+                        // todo: double checking things
+                        if (Vector3.Distance(boundaries[i], n.boundaries[j]) < 0.01)
                         {
                             GameObject neighVis = GameObject.CreatePrimitive(PrimitiveType.Cube);
                             neighVis.transform.localPosition = boundaries[i];
+                            neighVis.transform.localScale = new Vector3(0.11f, 0.11f, 0.11f);
+                            (neighVis.GetComponent(typeof(BoxCollider)) as Collider).enabled = false;
+                            neighVis.transform.SetParent(visPos.transform, true);
+                            Renderer rend1 = neighVis.GetComponent<Renderer>();
+                            rend1.material = new Material(Shader.Find("Specular"));
+                            rend1.material.SetColor("_Color", Color.green);
+                            break;
+                        }
+
+                        // debug render the impossible connection - screen space 
+                        Vector3 p1 = cam.WorldToScreenPoint(n.boundaries[j]);
+                        Vector2 b1 = new Vector2(p1.x / cam.pixelWidth, p1.y / cam.pixelHeight);
+
+                        Vector3 p2 = cam.WorldToScreenPoint(boundaries[i]);
+                        Vector2 b2 = new Vector2(p2.x / cam.pixelWidth, p2.y / cam.pixelHeight);
+
+                        if (Vector2.Distance(b1, b2) < 0.01 && Vector3.Distance(boundaries[i], n.boundaries[j]) > 0.01)
+                        {
+                            GameObject neighVis = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                            neighVis.transform.position = boundaries[i];
                             neighVis.transform.localScale = new Vector3(0.11f, 0.11f, 0.11f);
                             (neighVis.GetComponent(typeof(BoxCollider)) as Collider).enabled = false;
                             neighVis.transform.SetParent(visPos.transform, true);
@@ -189,6 +240,5 @@ public class Node
             }
         }
     }
-
 
 }

@@ -23,7 +23,6 @@ public class Main : MonoBehaviour
     {
         // camera reference
         cam = Camera.main;
-        Debug.Log(cam); 
 
         // find all PathFaces in the scene
         if (pathFaces.Length == 0) 
@@ -74,7 +73,7 @@ public class Main : MonoBehaviour
         foreach (Node node in allNodes)
         {
             node.FindGeomNeighbors(allNodes, cam);
-            node.StartDebugVis();
+            node.StartDebugVis(cam);
 
         }
 
@@ -171,7 +170,7 @@ public class Main : MonoBehaviour
         // Update is called once per frame
         void Update()
     {
-        if (Input.GetMouseButtonUp(0)) // todo comment all this back in? 
+        if (Input.GetMouseButtonUp(0)) // when mouseclick is released (once per click)
         {
             playerScript.SetTargetPosition(allNodes);
 
