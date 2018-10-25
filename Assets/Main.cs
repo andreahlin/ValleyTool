@@ -11,6 +11,7 @@ public class Main : MonoBehaviour
 
     GameObject thePlayer;
     CharController playerScript;
+    Camera cam; 
 
     Graph g;
 
@@ -20,19 +21,23 @@ public class Main : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        // camera reference
+        cam = Camera.main;
+        Debug.Log(cam); 
+
         // find all PathFaces in the scene
         if (pathFaces.Length == 0) 
         {
             pathFaces = GameObject.FindGameObjectsWithTag("PathFace"); 
         }
 
-        // todo: assign nodes to faces other than "top"  
+
         for (int i = 0; i < pathFaces.Length; i++)
         {
             
             GameObject face = pathFaces[i];
             Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the right normal? should be 
-            Node n = new Node(i, "top", face.transform.position, face.transform.up, face.transform.right); // todo: will change 
+            Node n = new Node(i, "top", face.transform.position, face.transform.up, face.transform.right);  
             float epsilon = 0.01f; 
 
             if (normal == new Vector3(0, 1, 0)) 
@@ -68,7 +73,7 @@ public class Main : MonoBehaviour
         // assign neighbors to nodes automatically
         foreach (Node node in allNodes)
         {
-            node.FindGeomNeighbors(allNodes);
+            node.FindGeomNeighbors(allNodes, cam);
             node.StartDebugVis();
 
         }
@@ -80,8 +85,6 @@ public class Main : MonoBehaviour
         thePlayer = GameObject.Find("Character");
         playerScript = thePlayer.GetComponent<CharController>();
         playerScript.AssignCurrNode(allNodes);
-
-
 
         //if (debugMode) //todo add back in idk why not working 
         //{
@@ -165,10 +168,10 @@ public class Main : MonoBehaviour
         //Debug.Log("Path: " + outputPath + ")"); 
     }
 
-    // Update is called once per frame
-    void Update()
+        // Update is called once per frame
+        void Update()
     {
-        if (Input.GetMouseButton(0)) // todo comment all this back in? 
+        if (Input.GetMouseButtonUp(0)) // todo comment all this back in? 
         {
             playerScript.SetTargetPosition(allNodes);
 
@@ -179,16 +182,5 @@ public class Main : MonoBehaviour
             playerScript.WalkAlongPath(path); 
 
         }
-        //if (Input.GetMouseButton(0)) 
-        //{
-        //    SetTargetPosition();
-
-        //}
-        //if (moving) 
-        //{
-        //    Move();
-        //}
-
-
     }
 }

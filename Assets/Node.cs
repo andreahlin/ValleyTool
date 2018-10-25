@@ -91,7 +91,7 @@ public class Node
     }
 
     // find neighbors that are next to the cube.
-    public void FindGeomNeighbors(List<Node> nodeList)
+    public void FindGeomNeighbors(List<Node> nodeList, Camera cam)
     {
         // todo: use epsilon 
         float epsilon = 0.01f;
@@ -118,6 +118,16 @@ public class Node
                 }
             }
         }
+
+        // find illusion faces 
+        foreach (Node n in nodeList)
+        {
+            // find the world to screen point 
+            //Vector3 screenPos = cam.WorldToScreenPoint(n.position);
+            //Debug.Log(screenPos); // how is this calculated? 
+        }
+
+
     }
 
     public void StartDebugVis()

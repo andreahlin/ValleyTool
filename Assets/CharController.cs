@@ -58,7 +58,7 @@ public class CharController : MonoBehaviour {
         visPos.transform.position = currNode.position;
         visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
         Renderer rend = visPos.GetComponent<Renderer>();
-        rend.material.SetColor("_Color", Color.magenta);
+        rend.material.SetColor("_Color", Color.black);
 
         // find the nearest Node to the mouse click (in another function rn) 
 
@@ -70,43 +70,37 @@ public class CharController : MonoBehaviour {
 
     public void WalkAlongPath(List<Node> path)
     {
-        // move position
-        //transform.position = Vector3.MoveTowards(transform.position,
-        //path[1].position,
-        //speed * Time.deltaTime);
-
         foreach (Node nextNode in path)
         {
-            while (!(Vector3.Distance(transform.position, nextNode.position) < 0.01f))
-            {
-                Vector3 nextPos = nextNode.position; //+ nextNode.up * .5f; // why does it freeze up? confused 
-                // only hitting the CUBE, not the face 
-                transform.position = Vector3.MoveTowards(transform.position,
-                                                         nextPos,
-                                                         speed * Time.deltaTime);
-                Debug.Log(nextNode.up); 
-            }
-
-            //Node nowNode = path[1];
-
-            //while (Vector3.Distance(transform.position, nowNode.position) < 0.5f) {
-            //    transform.position = Vector3.MoveTowards(transform.position,
-            //    nowNode.position,
-            //    speed * Time.deltaTime);
-
-            //}
-
-            //todo: need to translate smoothly between the positions 
-            //transform.position = nextNode.position;
-            // how to hold this? 
-
-            // color the closest Node from mouse click (todo: get rid of debugvis) 
+             //color the closest Node from mouse click (todo: get rid of debugvis) 
             //GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             //visPos.transform.position = nextNode.position;
             //visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
             //Renderer rend = visPos.GetComponent<Renderer>();
             //rend.material.SetColor("_Color", Color.red);
+
+            if (!nextNode.Equals(path[0])) 
+            {
+                Vector3 truePos = nextNode.position + nextNode.up * 0.5f;
+                while (!(Vector3.Distance(transform.position, truePos) < 0.01f))
+                {
+
+                    Vector3 nextPos = truePos;
+                    // only hitting the CUBE, not the face 
+                    transform.position = Vector3.MoveTowards(transform.position,
+                    nextPos,
+                    0.01f * Time.deltaTime);
+                    //transform.position = Vector3.Lerp(transform.position, nextPos, speed * Time.deltaTime); // todo: figure out how to slow dis down! 
+                }
+            }
         }
+
+        // update the current node for the next path taken 
+        if (path.Count > 0) 
+        {
+            currNode = path[path.Count - 1];
+        }
+
     }
 
 
@@ -141,7 +135,6 @@ public class CharController : MonoBehaviour {
             {
                 if (dist < closestDist)
                 {
-                    //Debug.Log(n.position); 
                     targetNode = n;
                     closestDist = dist;
                 }
