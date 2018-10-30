@@ -119,19 +119,15 @@ public class Node
             }
         }
 
-        // find illusion faces 
+        // find illusion neighbors 
         foreach (Node n in nodeList)
         {
             // find the world to screen point 
             Vector3 screenPos = cam.WorldToScreenPoint(n.position);
             Vector2 p1 = new Vector2(screenPos.x / cam.pixelWidth, screenPos.y / cam.pixelHeight);
-            //float x = screenPos.x / cam.pixelWidth; // NORMALIZED VALUE
-            //float y = screenPos.y / cam.pixelHeight;
 
             Vector3 thisScreenPos = cam.WorldToScreenPoint(this.position);
             Vector2 p2 = new Vector2(thisScreenPos.x / cam.pixelWidth, thisScreenPos.y / cam.pixelHeight); 
-            //float thisx = thisScreenPos.x / cam.pixelWidth;
-            //float thisy = thisScreenPos.y / cam.pixelHeight; 
 
             if (Vector2.Distance(p1, p2) < 0.03) //0.05) 
             {
@@ -139,6 +135,9 @@ public class Node
                 if (!this.neighList.Contains(n) && !this.Equals(n)) 
                 {
                     neighList.Add(n);
+                    //// todo: debug 
+                    Debug.DrawLine(this.position, n.position,Color.magenta);
+
                 }
             }
         }

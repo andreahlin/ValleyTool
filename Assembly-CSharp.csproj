@@ -67,6 +67,9 @@
     <Compile Include="Assets\MinHeap.cs" />
     <Compile Include="Assets\Node.cs" />
     <Compile Include="Assets\NodeInfoVis.cs" />
+    <None Include="Assets\Shaders\Illusion1Shader.shader" />
+    <None Include="Assets\Shaders\IllusionCharShader.shader" />
+    <None Include="Assets\Shaders\Hologramboi.shader" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>/Users/andrealin 1/Desktop/unity/ValleyTool/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>

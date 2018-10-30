@@ -47,7 +47,6 @@ public class Graph {
         return false; 
     }
 
-    // todo: implement astar 
     public List<Node> AStar(Node s, Node t) 
     {
         // call InSameComponent() to first to find ccs
@@ -111,5 +110,10 @@ public class Graph {
             t = t.comesFrom; 
         }
         return path; 
+    }
+
+    public void MazeGenerator(Node s, Node t) 
+    {
+        // create a maze by creating neighbors for each node  .. start with no neighbors, or start with a neighbor? idk  
     }
 }
