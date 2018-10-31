@@ -6,7 +6,7 @@
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 	}
 	SubShader {
-		Tags { "Queue"="Geometry+2" "RenderType"="Opaque" }
+		Tags { "Queue"="Geometry+1" "RenderType"="Opaque" }
 		LOD 200
 
 		CGPROGRAM
