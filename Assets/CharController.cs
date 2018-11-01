@@ -43,7 +43,7 @@ public class CharController : MonoBehaviour {
         {
             float dist = Vector3.Distance(this.transform.position, n.position);
 
-            if (dist <= 0.5f) 
+            if (dist <= 0.51f) 
             {
                 if (dist < closestDist)
                 {
@@ -53,7 +53,7 @@ public class CharController : MonoBehaviour {
             }
         }
 
-        // throw error if no current node is found ... stop game? 
+        // todo throw error if no current node is found ... stop game? 
 
         // color the current node red (todo: get rid of) 
         //GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -160,7 +160,7 @@ public class CharController : MonoBehaviour {
 
     void Move()
     {
-        // change rotation of char using slerp (change rotation smoothly)
+        // change rotation of char using slerp (change rotation smoothly)w
         transform.rotation = Quaternion.Slerp(transform.rotation,
                                               playerRot,
                                               rotSpeed * Time.deltaTime);

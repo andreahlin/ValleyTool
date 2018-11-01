@@ -18,52 +18,52 @@ public class Main : MonoBehaviour
 
     void BuildNodeGrid() 
     {
-        // 2d case (base test) 
-        // Start: (5,5,5) Goal: (14,5,14) 
-        //for (int x = 5; x < 15; x++)
-        //{
-        //    for (int z = 5; z < 15; z++) 
-        //    {
-        //        // visualization of face todo get rid  
-        //        GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        //        face.transform.position = new Vector3(x, 5,z);
-        //        face.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); // new Vector3(0.09f, 0.09f, 0.09f)
-        //        Renderer rend1 = face.GetComponent<Renderer>();
-        //        rend1.material.SetColor("_Color", Color.green);
+         //2d case (base test) 
+         //Start: (5,5,5) Goal: (14,5,14) 
+        for (int x = 5; x < 15; x++)
+        {
+            for (int z = 5; z < 15; z++) 
+            {
+                // visualization of face todo get rid  
+                GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                face.transform.position = new Vector3(x, 5,z);
+                face.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); // new Vector3(0.09f, 0.09f, 0.09f)
+                Renderer rend1 = face.GetComponent<Renderer>();
+                rend1.material.SetColor("_Color", Color.green);
 
-        //        Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
-        //        Node n = new Node(x, "top", face.transform.position, face.transform.up, face.transform.right);
-        //        float epsilon = 0.01f;
+                Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
+                Node n = new Node(x, "top", face.transform.position, face.transform.up, face.transform.right);
+                float epsilon = 0.01f;
 
-        //        if (normal == new Vector3(0, 1, 0))
-        //        {
-        //            n = new Node(x, "top", face.transform.position, face.transform.up, face.transform.right);
-        //        }
-        //        else if (normal == new Vector3(-1, 0, 0))
-        //        {
-        //            n = new Node(x, "negx", face.transform.position, face.transform.up, face.transform.right);
-        //        }
-        //        else if (normal == new Vector3(0, 0, -1))
-        //        {
-        //            n = new Node(x, "negz", face.transform.position, face.transform.up, face.transform.right);
-        //        }
-        //        else if (normal.x > epsilon || normal.x < -epsilon)
-        //        {
-        //            if (normal.y > 0)
-        //            {
-        //                n = new Node(x, "diagx", face.transform.position, face.transform.up, face.transform.right);
-        //            }
-        //        }
-        //        else if (normal.z > epsilon || normal.z < -epsilon)
-        //        {
-        //            if (normal.y > 0)
-        //            {
-        //                n = new Node(x, "diagz", face.transform.position, face.transform.up, face.transform.right);
-        //            }
-        //        }
-        //        allNodes.Add(n);
-        //    }
-        //}
+                if (normal == new Vector3(0, 1, 0))
+                {
+                    n = new Node(x, "top", face.transform.position, face.transform.up, face.transform.right);
+                }
+                else if (normal == new Vector3(-1, 0, 0))
+                {
+                    n = new Node(x, "negx", face.transform.position, face.transform.up, face.transform.right);
+                }
+                else if (normal == new Vector3(0, 0, -1))
+                {
+                    n = new Node(x, "negz", face.transform.position, face.transform.up, face.transform.right);
+                }
+                else if (normal.x > epsilon || normal.x < -epsilon)
+                {
+                    if (normal.y > 0)
+                    {
+                        n = new Node(x, "diagx", face.transform.position, face.transform.up, face.transform.right);
+                    }
+                }
+                else if (normal.z > epsilon || normal.z < -epsilon)
+                {
+                    if (normal.y > 0)
+                    {
+                        n = new Node(x, "diagz", face.transform.position, face.transform.up, face.transform.right);
+                    }
+                }
+                allNodes.Add(n);
+            }
+        }
 
         // todo: run a maze generator on the graph with allNodes (connecting them as you go) 
         // graph.runmazegenerator
@@ -151,7 +151,7 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // todo: put somewhere else 
-        BuildNodeGrid();
+        //BuildNodeGrid();
 
          // find all PathFaces in the scene
         if (pathFaces.Length == 0) 

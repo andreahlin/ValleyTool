@@ -93,7 +93,6 @@ public class Node
     // find neighbors that are next to the cube.
     public void FindGeomNeighbors(List<Node> nodeList, Camera cam)
     {
-        // todo: use epsilon 
         float epsilon = 0.01f;
         // if the boundary points are touching, then add as neighbor 
         foreach (Node n in nodeList)
@@ -108,10 +107,16 @@ public class Node
                         for (int j = 0; j < 4; j++)
                         {
                             // todo: optimize
-                            if (boundaries[i] == n.boundaries[j])
+                            if (Mathf.Abs(boundaries[i].x - n.boundaries[j].x) < epsilon)
                             {
-                                neighList.Add(n);
-                                break;
+                                if (Mathf.Abs(boundaries[i].y - n.boundaries[j].y) < epsilon)
+                                {
+                                    if (Mathf.Abs(boundaries[i].z - n.boundaries[j].z) < epsilon)
+                                    {
+                                        neighList.Add(n);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -119,28 +124,169 @@ public class Node
             }
         }
 
+        FindIllusionNeihbors(nodeList, cam); 
+    }
+
+
+    public void FindIllusionNeihbors(List<Node> nodeList, Camera cam) 
+    {
         // find illusion neighbors 
         foreach (Node n in nodeList)
         {
-            // find the world to screen point 
-            Vector3 screenPos = cam.WorldToScreenPoint(n.position);
-            Vector2 p1 = new Vector2(screenPos.x / cam.pixelWidth, screenPos.y / cam.pixelHeight);
-
-            Vector3 thisScreenPos = cam.WorldToScreenPoint(this.position);
-            Vector2 p2 = new Vector2(thisScreenPos.x / cam.pixelWidth, thisScreenPos.y / cam.pixelHeight); 
-
-            if (Vector2.Distance(p1, p2) < 0.03) //0.05) 
+            if (!this.Equals(n)) 
             {
-                // make sure they are not already neighbors
-                if (!this.neighList.Contains(n) && !this.Equals(n)) 
-                {
-                    neighList.Add(n);
-                    //// todo: debug 
-                    Debug.DrawLine(this.position, n.position,Color.magenta);
 
+                // find the world to screen point 
+                Vector3 screenPos = cam.WorldToScreenPoint(n.position);
+                Vector2 p1 = new Vector2(screenPos.x / cam.pixelWidth, screenPos.y / cam.pixelHeight);
+
+                Vector3 thisScreenPos = cam.WorldToScreenPoint(this.position);
+                Vector2 p2 = new Vector2(thisScreenPos.x / cam.pixelWidth, thisScreenPos.y / cam.pixelHeight);
+
+                if (Vector2.Distance(p1, p2) < 0.03) //0.05) 
+                {
+                    //make sure they are not already neighbors
+                    if (!this.neighList.Contains(n))
+                    {
+                        bool occluded = false;
+
+                        //raycast through the potential neighbor node 
+                        Ray ray = cam.ScreenPointToRay(screenPos);
+                        RaycastHit[] hits;
+                        hits = Physics.RaycastAll(ray, 1000.0F);
+
+                        float shortest = Mathf.Infinity; 
+                        for (int i = 0; i < hits.Length; i++)
+                        {
+                            RaycastHit hit = hits[i];
+                            // check if this node is in the Ray path 
+                            if (Vector3.Distance(hit.transform.position, this.position) < 0.001f)
+                            {
+                                //Renderer rend = hit.transform.GetComponent<Renderer>();
+                                //if (rend)
+                                //{
+                                //    rend.material.shader = Shader.Find("Transparent/Diffuse");
+                                //    Color tempColor = Color.black;
+                                //    tempColor.a = 0.5F;
+                                //    rend.material.color = tempColor;
+                                //}
+                                occluded = true;
+                            }
+                            // now the other case: they are adjacent, but there is something occluding the other one
+                            if (Vector3.Distance(ray.origin, hit.point) < shortest)
+                            {
+                                shortest = Vector3.Distance(ray.origin, hit.point); 
+                            }
+                        }
+                        if (Vector3.Distance(ray.origin, n.position) > shortest)
+                        {
+                            occluded = true;
+                        }
+
+                        // check if THIS node is occluded by anything (if so, stop connections forming) todo can check higher up outside loops 
+                        Ray rayThis = cam.ScreenPointToRay(thisScreenPos);
+                        RaycastHit[] hitsThis;
+                        hitsThis = Physics.RaycastAll(rayThis, 1000.0F);
+                        float shortestThis = Mathf.Infinity;
+                        for (int i = 0; i < hitsThis.Length; i++)
+                        {
+                            RaycastHit hitThis = hitsThis[i];
+                            if (Vector3.Distance(ray.origin, hitThis.point) < shortestThis)
+                            {
+                                shortestThis = Vector3.Distance(ray.origin, hitThis.point);
+                            }
+                        }
+                        if (Vector3.Distance(rayThis.origin, this.position) > shortestThis)
+                        {
+                            occluded = true; 
+                        }
+
+                        if (!occluded) neighList.Add(n);
+                    }
                 }
+
+                // additional raycasting stuff try.........................................
+                //Ray ray = cam.ScreenPointToRay(screenPos);
+                //RaycastHit[] hits;
+                //hits = Physics.RaycastAll(ray, 10000.0F);
+
+                //// find the hit nearest to the camera 
+                //float shortest = Mathf.Infinity;
+                //for (int i = 0; i < hits.Length; i++)
+                //{
+                //    RaycastHit hit = hits[i];
+                //    //Debug.Log("hit pos: " + Vector3.Distance(hit.point, ray.origin));
+                //    //Debug.Log("my pos:  " + Vector3.Distance(n.position, ray.origin));
+
+                //    if (Vector3.Distance(hit.point, ray.origin) < shortest)
+                //    {
+                //        shortest = Vector3.Distance(hit.point, ray.origin); 
+                //    }
+
+                //    Renderer rend = hit.transform.GetComponent<Renderer>();
+                //    if (rend)
+                //    {
+                //        //hit.transform.localScale = new Vector3(0.11f, .11f, .11f);
+                //        // Change the material of all hit colliders
+                //        // to use a transparent shader.
+                //        rend.material.shader = Shader.Find("Transparent/Diffuse");
+                //        Color tempColor = Color.black;
+                //        //tempColor.a = 0.5F;
+                //        rend.material.color = tempColor;
+                //    }
+                //}
+                //// if it is not the nearest hit then GO HOME BOI 
+
+                //if (!(shortest < Vector3.Distance(n.position, ray.origin)))
+                //{
+                //    // then this geometry is the shortest one  
+
+                //}
             }
+
         }
+
+        //// SINGLE CASE TODO IDK 
+        //if (this.position.Equals(new Vector3(15,-8.5f,20))) //15,-8.5f,18)))
+        //{
+        //    Vector3 screensp = cam.WorldToScreenPoint(this.position);
+        //    Ray ray = cam.ScreenPointToRay(screensp);
+        //    RaycastHit[] hits;
+        //    hits = Physics.RaycastAll(ray, 100.0F);
+
+        //    // find the hit nearest to the camera 
+        //    float shortest = Mathf.Infinity;
+        //    for (int i = 0; i < hits.Length; i++)
+        //    {
+        //        RaycastHit hit = hits[i];
+        //        Debug.Log("hit pos: " + Vector3.Distance(hit.point, ray.origin));
+        //        Debug.Log("my pos:  " + Vector3.Distance(this.position, ray.origin));
+
+        //        if (Vector3.Distance(hit.point, ray.origin) < shortest)
+        //        {
+        //            shortest = Vector3.Distance(hit.point, ray.origin); 
+        //        }
+
+        //        Renderer rend = hit.transform.GetComponent<Renderer>();
+        //        if (rend)
+        //        {
+        //            //hit.transform.localScale = new Vector3(0.11f, .11f, .11f);
+        //            // Change the material of all hit colliders
+        //            // to use a transparent shader.
+        //            rend.material.shader = Shader.Find("Transparent/Diffuse");
+        //            Color tempColor = Color.black;
+        //            tempColor.a = 0.5F;
+        //            rend.material.color = tempColor;
+        //        }
+        //    }
+
+        //    // if there is something in front of it, then disqualify it from making a connection 
+        //    if (!(shortest < Vector3.Distance(this.position, ray.origin)))
+        //    {
+        //        // then this geometry is the nearest to the camera 
+        //        //Debug.Log("winner: " + Vector3.Distance(this.position, ray.origin)); 
+        //    }
+        //}
     }
 
     public void StartDebugVis(Camera cam)
@@ -206,6 +352,9 @@ public class Node
 
                         if (Vector2.Distance(b1, b2) < 0.01 && Vector3.Distance(boundaries[i], n.boundaries[j]) > 0.1)
                         {
+                            // draw line 
+                            Debug.DrawLine(boundaries[i], n.boundaries[j], Color.green, 1000); 
+
                             GameObject neighVis = GameObject.CreatePrimitive(PrimitiveType.Cube);
                             neighVis.transform.position = boundaries[i];
                             neighVis.transform.localScale = new Vector3(0.11f, 0.11f, 0.11f);
