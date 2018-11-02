@@ -106,7 +106,6 @@ public class Node
                     {
                         for (int j = 0; j < 4; j++)
                         {
-                            // todo: optimize
                             if (Mathf.Abs(boundaries[i].x - n.boundaries[j].x) < epsilon)
                             {
                                 if (Mathf.Abs(boundaries[i].y - n.boundaries[j].y) < epsilon)
@@ -124,66 +123,72 @@ public class Node
             }
         }
 
-        FindIllusionNeihbors(nodeList, cam); 
+        FindIllusionNeighbors(nodeList, cam); 
     }
 
 
-    public void FindIllusionNeihbors(List<Node> nodeList, Camera cam) 
+    public void FindIllusionNeighbors(List<Node> nodeList, Camera cam) 
     {
         // find illusion neighbors 
         foreach (Node n in nodeList)
         {
+            // do not check self  
             if (!this.Equals(n)) 
             {
 
-                // find the world to screen point 
+                // find the world to screen points 
                 Vector3 screenPos = cam.WorldToScreenPoint(n.position);
                 Vector2 p1 = new Vector2(screenPos.x / cam.pixelWidth, screenPos.y / cam.pixelHeight);
-
                 Vector3 thisScreenPos = cam.WorldToScreenPoint(this.position);
                 Vector2 p2 = new Vector2(thisScreenPos.x / cam.pixelWidth, thisScreenPos.y / cam.pixelHeight);
 
-                if (Vector2.Distance(p1, p2) < 0.03) //0.05) 
+                if (Vector2.Distance(p1, p2) < 0.03) //0.05) // .03
                 {
                     //make sure they are not already neighbors
                     if (!this.neighList.Contains(n))
                     {
-                        bool occluded = false;
+                        //neighList.Add(n); 
+
+                        bool disqualify = false;
 
                         //raycast through the potential neighbor node 
                         Ray ray = cam.ScreenPointToRay(screenPos);
                         RaycastHit[] hits;
                         hits = Physics.RaycastAll(ray, 1000.0F);
 
-                        float shortest = Mathf.Infinity; 
+                        float shortest = Mathf.Infinity;
+                        RaycastHit closest = hits[0]; 
                         for (int i = 0; i < hits.Length; i++)
                         {
                             RaycastHit hit = hits[i];
-                            // check if this node is in the Ray path 
-                            if (Vector3.Distance(hit.transform.position, this.position) < 0.001f)
+                            // case 1: check if THIS is also in the Ray path 
+                            if (Vector3.Distance(hit.transform.position, this.position) < 0.01f)
                             {
-                                //Renderer rend = hit.transform.GetComponent<Renderer>();
-                                //if (rend)
-                                //{
-                                //    rend.material.shader = Shader.Find("Transparent/Diffuse");
-                                //    Color tempColor = Color.black;
-                                //    tempColor.a = 0.5F;
-                                //    rend.material.color = tempColor;
-                                //}
-                                occluded = true;
+                                // if it is, then one is completely occluding the other 
+                                Debug.Log("case 1");
+                                disqualify = true;
                             }
-                            // now the other case: they are adjacent, but there is something occluding the other one
+                            // case 2: they are screen-space adjacent, but there is something occluding the potential neighbor
                             if (Vector3.Distance(ray.origin, hit.point) < shortest)
                             {
-                                shortest = Vector3.Distance(ray.origin, hit.point); 
+                                shortest = Vector3.Distance(ray.origin, hit.point);
+                                closest = hit;
                             }
                         }
-                        if (Vector3.Distance(ray.origin, n.position) > shortest)
+                        if (shortest < Vector3.Distance(ray.origin, n.position))
                         {
-                            occluded = true;
+                            float epsilon = 0.01f;
+                            // account for floating point errors in raycasting difference 
+                            if (!(Mathf.Abs(shortest - Vector3.Distance(ray.origin, n.position)) < epsilon))
+                            {
+                                //Debug.Log("case 2");
+                                //Debug.Log("ID #" + this.id);
+                                //Debug.Log("distance from potential neighbor to camera: " + Vector3.Distance(ray.origin, n.position));
+                                disqualify = true;
+                            }
                         }
 
-                        // check if THIS node is occluded by anything (if so, stop connections forming) todo can check higher up outside loops 
+                        // case 3: THIS is occluded by something (if so, stop connections forming) todo can check higher up outside loops 
                         Ray rayThis = cam.ScreenPointToRay(thisScreenPos);
                         RaycastHit[] hitsThis;
                         hitsThis = Physics.RaycastAll(rayThis, 1000.0F);
@@ -198,56 +203,20 @@ public class Node
                         }
                         if (Vector3.Distance(rayThis.origin, this.position) > shortestThis)
                         {
-                            occluded = true; 
+                            Debug.Log("case 3");
+                            disqualify = true;
                         }
 
-                        if (!occluded) neighList.Add(n);
+                        // todo: case 4: the penrose triangle corner problem 
+
+                        if (!disqualify) neighList.Add(n);
                     }
                 }
-
-                // additional raycasting stuff try.........................................
-                //Ray ray = cam.ScreenPointToRay(screenPos);
-                //RaycastHit[] hits;
-                //hits = Physics.RaycastAll(ray, 10000.0F);
-
-                //// find the hit nearest to the camera 
-                //float shortest = Mathf.Infinity;
-                //for (int i = 0; i < hits.Length; i++)
-                //{
-                //    RaycastHit hit = hits[i];
-                //    //Debug.Log("hit pos: " + Vector3.Distance(hit.point, ray.origin));
-                //    //Debug.Log("my pos:  " + Vector3.Distance(n.position, ray.origin));
-
-                //    if (Vector3.Distance(hit.point, ray.origin) < shortest)
-                //    {
-                //        shortest = Vector3.Distance(hit.point, ray.origin); 
-                //    }
-
-                //    Renderer rend = hit.transform.GetComponent<Renderer>();
-                //    if (rend)
-                //    {
-                //        //hit.transform.localScale = new Vector3(0.11f, .11f, .11f);
-                //        // Change the material of all hit colliders
-                //        // to use a transparent shader.
-                //        rend.material.shader = Shader.Find("Transparent/Diffuse");
-                //        Color tempColor = Color.black;
-                //        //tempColor.a = 0.5F;
-                //        rend.material.color = tempColor;
-                //    }
-                //}
-                //// if it is not the nearest hit then GO HOME BOI 
-
-                //if (!(shortest < Vector3.Distance(n.position, ray.origin)))
-                //{
-                //    // then this geometry is the shortest one  
-
-                //}
-            }
-
+            } 
         }
 
-        //// SINGLE CASE TODO IDK 
-        //if (this.position.Equals(new Vector3(15,-8.5f,20))) //15,-8.5f,18)))
+        //// SINGLE CASE TODO  
+        //if (this.position.Equals(new Vector3(6.5f,4,2.5f))) //15,-8.5f,18)))
         //{
         //    Vector3 screensp = cam.WorldToScreenPoint(this.position);
         //    Ray ray = cam.ScreenPointToRay(screensp);
@@ -259,8 +228,8 @@ public class Node
         //    for (int i = 0; i < hits.Length; i++)
         //    {
         //        RaycastHit hit = hits[i];
-        //        Debug.Log("hit pos: " + Vector3.Distance(hit.point, ray.origin));
-        //        Debug.Log("my pos:  " + Vector3.Distance(this.position, ray.origin));
+        //        //Debug.Log("hit pos: " + Vector3.Distance(hit.point, ray.origin));
+        //        //Debug.Log("my pos:  " + Vector3.Distance(this.position, ray.origin));
 
         //        if (Vector3.Distance(hit.point, ray.origin) < shortest)
         //        {
@@ -287,6 +256,7 @@ public class Node
         //        //Debug.Log("winner: " + Vector3.Distance(this.position, ray.origin)); 
         //    }
         //}
+
     }
 
     public void StartDebugVis(Camera cam)

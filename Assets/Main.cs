@@ -151,7 +151,7 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // todo: put somewhere else 
-        //BuildNodeGrid();
+        BuildNodeGrid();
 
          // find all PathFaces in the scene
         if (pathFaces.Length == 0) 

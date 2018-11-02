@@ -6,11 +6,9 @@
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 	}
 	SubShader {
-        Tags { "RenderType"="Opaque" }
+        Tags {"Queue"="Geometry+2" "RenderType"="Opaque" }
 		LOD 200
-        
         ZWrite Off 
-        
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
 		#pragma surface surf Standard fullforwardshadows
