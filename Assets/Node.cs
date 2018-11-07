@@ -207,7 +207,7 @@ public class Node
                             disqualify = true;
                         }
 
-                        // todo: case 4: the penrose triangle corner problem 
+                        // todo: case 4: the penrose triangle corner problem (only half of the node is blocked) 
 
                         if (!disqualify) neighList.Add(n);
                     }

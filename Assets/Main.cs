@@ -14,146 +14,27 @@ public class Main : MonoBehaviour
     Camera cam; 
     Graph g;
 
-    public bool debugMode = true; // todo: not using right now 
+    public bool debugMode = true; // todo: not using right now
 
-    void BuildNodeGrid() 
-    {
-         //2d case (base test) 
-         //Start: (5,5,5) Goal: (14,5,14) 
-        for (int x = 5; x < 15; x++)
-        {
-            for (int z = 5; z < 15; z++) 
-            {
-                // visualization of face todo get rid  
-                GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                face.transform.position = new Vector3(x, 5,z);
-                face.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); // new Vector3(0.09f, 0.09f, 0.09f)
-                Renderer rend1 = face.GetComponent<Renderer>();
-                rend1.material.SetColor("_Color", Color.green);
-
-                Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
-                Node n = new Node(x, "top", face.transform.position, face.transform.up, face.transform.right);
-                float epsilon = 0.01f;
-
-                if (normal == new Vector3(0, 1, 0))
-                {
-                    n = new Node(x, "top", face.transform.position, face.transform.up, face.transform.right);
-                }
-                else if (normal == new Vector3(-1, 0, 0))
-                {
-                    n = new Node(x, "negx", face.transform.position, face.transform.up, face.transform.right);
-                }
-                else if (normal == new Vector3(0, 0, -1))
-                {
-                    n = new Node(x, "negz", face.transform.position, face.transform.up, face.transform.right);
-                }
-                else if (normal.x > epsilon || normal.x < -epsilon)
-                {
-                    if (normal.y > 0)
-                    {
-                        n = new Node(x, "diagx", face.transform.position, face.transform.up, face.transform.right);
-                    }
-                }
-                else if (normal.z > epsilon || normal.z < -epsilon)
-                {
-                    if (normal.y > 0)
-                    {
-                        n = new Node(x, "diagz", face.transform.position, face.transform.up, face.transform.right);
-                    }
-                }
-                allNodes.Add(n);
-            }
-        }
-
-        // todo: run a maze generator on the graph with allNodes (connecting them as you go) 
-        // graph.runmazegenerator
-
-
-        // 3d case
-        //for (int a = 5; a < 10; a++)
-        //{
-        //    for (int b = 0; b < 5; b++)
-        //    {
-        //        for (int c = 5; c < 10; c++) 
-        //        {
-        //            // create a face for each of the 3 directions 
-        //            GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        //            plane.transform.position = new Vector3(a,b,c);
-        //            plane.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); // new Vector3(0.09f, 0.09f, 0.09f)
-        //            Renderer rend1 = plane.GetComponent<Renderer>();
-        //            rend1.material.SetColor("_Color", Color.green);
-
-        //            GameObject plane2 = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        //            plane2.transform.eulerAngles = new Vector3(-90, 0, 0);
-        //            plane2.transform.position = new Vector3(a, b + 0.5f, c + 0.5f);
-        //            plane2.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-        //            Renderer rend2 = plane2.GetComponent<Renderer>();
-        //            rend2.material.SetColor("_Color", Color.red);
-
-        //            GameObject plane3 = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        //            plane3.transform.eulerAngles = new Vector3(0, 0, 90);
-        //            plane3.transform.position = new Vector3(a + 0.5f, b + 0.5f, c);
-        //            plane3.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-        //            Renderer rend3 = plane3.GetComponent<Renderer>();
-        //            rend3.material.SetColor("_Color", Color.blue);
-
-        //            // todo: create nodes but do not set their neighbors BRu h
-
-        //            // create a node from each of the faces 
-        //            for (int i = 0; i < 3; i++) 
-        //            {
-        //                GameObject face;
-        //                if (i == 0) face = plane;
-        //                else if (i == 1) face = plane2;
-        //                else face = plane3;
-        //                Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
-        //                Node n = new Node(a, "top", face.transform.position, face.transform.up, face.transform.right);
-        //                float epsilon = 0.01f;
-
-        //                if (normal == new Vector3(0, 1, 0))
-        //                {
-        //                    n = new Node(a, "top", face.transform.position, face.transform.up, face.transform.right);
-        //                }
-        //                else if (normal == new Vector3(-1, 0, 0))
-        //                {
-        //                    n = new Node(a, "negx", face.transform.position, face.transform.up, face.transform.right);
-        //                }
-        //                else if (normal == new Vector3(0, 0, -1))
-        //                {
-        //                    n = new Node(a, "negz", face.transform.position, face.transform.up, face.transform.right);
-        //                }
-        //                else if (normal.x > epsilon || normal.x < -epsilon)
-        //                {
-        //                    if (normal.y > 0)
-        //                    {
-        //                        n = new Node(a, "diagx", face.transform.position, face.transform.up, face.transform.right);
-        //                    }
-        //                }
-        //                else if (normal.z > epsilon || normal.z < -epsilon)
-        //                {
-        //                    if (normal.y > 0)
-        //                    {
-        //                        n = new Node(a, "diagz", face.transform.position, face.transform.up, face.transform.right);
-        //                    }
-        //                }
-
-        //                allNodes.Add(n);
-        //            }
-        //        }
-        //    }
-        //}
-    }
-    
     // Use this for initialization
     void Start()
     {
         // camera reference
         cam = Camera.main;
 
-        // todo: put somewhere else 
-        BuildNodeGrid();
+        // Maze Attempts ///////////////////////////////////
+        Maze m = new Maze();
+        m.GenerateMaze();
 
-         // find all PathFaces in the scene
+        // display nodes in debug 
+        foreach (Node node in m.cells)
+        {
+            node.StartDebugVis(cam);
+        }
+        ///////////////////////////////////////////////
+
+
+        // find all PathFaces in the scene
         if (pathFaces.Length == 0) 
         {
             pathFaces = GameObject.FindGameObjectsWithTag("PathFace"); 
@@ -204,7 +85,6 @@ public class Main : MonoBehaviour
             // todo: commented out automatic geometry neighbor finding 
             node.FindGeomNeighbors(allNodes, cam);
             node.StartDebugVis(cam);
-
         }
 
         // create a graph for later use
@@ -289,9 +169,6 @@ public class Main : MonoBehaviour
         //Debug.Log("Path: " + outputPath + ")"); 
     }
 
-    // create Node grid
-
-
         // Update is called once per frame
         void Update()
     {
@@ -309,4 +186,133 @@ public class Main : MonoBehaviour
 
         }
     }
+
+    void BuildNodeGrid()
+    {
+        //2d case (base test) 
+        //Start: (5,5,5) Goal: (14,5,13) 
+        //for (int x = 5; x < 15; x++)
+        //{
+        //    for (int z = 5; z < 15; z++) 
+        //    {
+        //        // visualization of face todo get rid  
+        //        GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        //        face.transform.position = new Vector3(x, 5,z);
+        //        face.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); // new Vector3(0.09f, 0.09f, 0.09f)
+        //        Renderer rend1 = face.GetComponent<Renderer>();
+        //        rend1.material.SetColor("_Color", Color.green);
+
+        //        Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
+        //        Node n = new Node(x, "top", face.transform.position, face.transform.up, face.transform.right);
+        //        float epsilon = 0.01f;
+
+        //        if (normal == new Vector3(0, 1, 0))
+        //        {
+        //            n = new Node(x, "top", face.transform.position, face.transform.up, face.transform.right);
+        //        }
+        //        else if (normal == new Vector3(-1, 0, 0))
+        //        {
+        //            n = new Node(x, "negx", face.transform.position, face.transform.up, face.transform.right);
+        //        }
+        //        else if (normal == new Vector3(0, 0, -1))
+        //        {
+        //            n = new Node(x, "negz", face.transform.position, face.transform.up, face.transform.right);
+        //        }
+        //        else if (normal.x > epsilon || normal.x < -epsilon)
+        //        {
+        //            if (normal.y > 0)
+        //            {
+        //                n = new Node(x, "diagx", face.transform.position, face.transform.up, face.transform.right);
+        //            }
+        //        }
+        //        else if (normal.z > epsilon || normal.z < -epsilon)
+        //        {
+        //            if (normal.y > 0)
+        //            {
+        //                n = new Node(x, "diagz", face.transform.position, face.transform.up, face.transform.right);
+        //            }
+        //        }
+        //        allNodes.Add(n);
+        //    }
+        //}
+
+        // todo: run a maze generator on the graph with allNodes (connecting them as you go) 
+        // graph.runmazegenerator
+
+
+        // 3d case
+        //for (int a = 5; a < 10; a++)
+        //{
+        //    for (int b = 0; b < 5; b++)
+        //    {
+        //        for (int c = 5; c < 10; c++) 
+        //        {
+        //            // create a face for each of the 3 directions 
+        //            GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        //            plane.transform.position = new Vector3(a,b,c);
+        //            plane.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); // new Vector3(0.09f, 0.09f, 0.09f)
+        //            Renderer rend1 = plane.GetComponent<Renderer>();
+        //            rend1.material.SetColor("_Color", Color.green);
+
+        //            GameObject plane2 = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        //            plane2.transform.eulerAngles = new Vector3(-90, 0, 0);
+        //            plane2.transform.position = new Vector3(a, b + 0.5f, c + 0.5f);
+        //            plane2.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+        //            Renderer rend2 = plane2.GetComponent<Renderer>();
+        //            rend2.material.SetColor("_Color", Color.red);
+
+        //            GameObject plane3 = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        //            plane3.transform.eulerAngles = new Vector3(0, 0, 90);
+        //            plane3.transform.position = new Vector3(a + 0.5f, b + 0.5f, c);
+        //            plane3.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+        //            Renderer rend3 = plane3.GetComponent<Renderer>();
+        //            rend3.material.SetColor("_Color", Color.blue);
+
+        //            // todo: create nodes but do not set their neighbors BRu h
+
+        //            // create a node from each of the faces 
+        //            for (int i = 0; i < 3; i++) 
+        //            {
+        //                GameObject face;
+        //                if (i == 0) face = plane;
+        //                else if (i == 1) face = plane2;
+        //                else face = plane3;
+        //                Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
+        //                Node n = new Node(a, "top", face.transform.position, face.transform.up, face.transform.right);
+        //                float epsilon = 0.01f;
+
+        //                if (normal == new Vector3(0, 1, 0))
+        //                {
+        //                    n = new Node(a, "top", face.transform.position, face.transform.up, face.transform.right);
+        //                }
+        //                else if (normal == new Vector3(-1, 0, 0))
+        //                {
+        //                    n = new Node(a, "negx", face.transform.position, face.transform.up, face.transform.right);
+        //                }
+        //                else if (normal == new Vector3(0, 0, -1))
+        //                {
+        //                    n = new Node(a, "negz", face.transform.position, face.transform.up, face.transform.right);
+        //                }
+        //                else if (normal.x > epsilon || normal.x < -epsilon)
+        //                {
+        //                    if (normal.y > 0)
+        //                    {
+        //                        n = new Node(a, "diagx", face.transform.position, face.transform.up, face.transform.right);
+        //                    }
+        //                }
+        //                else if (normal.z > epsilon || normal.z < -epsilon)
+        //                {
+        //                    if (normal.y > 0)
+        //                    {
+        //                        n = new Node(a, "diagz", face.transform.position, face.transform.up, face.transform.right);
+        //                    }
+        //                }
+
+        //                allNodes.Add(n);
+        //            }
+        //        }
+        //    }
+        //}
+    }
+
 }

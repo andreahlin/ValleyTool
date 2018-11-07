@@ -64,6 +64,7 @@
     <Compile Include="Assets\CharController.cs" />
     <Compile Include="Assets\Graph.cs" />
     <Compile Include="Assets\Main.cs" />
+    <Compile Include="Assets\Maze.cs" />
     <Compile Include="Assets\MinHeap.cs" />
     <Compile Include="Assets\Node.cs" />
     <Compile Include="Assets\NodeInfoVis.cs" />
