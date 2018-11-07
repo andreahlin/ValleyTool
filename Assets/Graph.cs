@@ -49,6 +49,16 @@ public class Graph {
 
     public List<Node> AStar(Node s, Node t) 
     {
+        if (s == null)
+        {
+            Debug.Log("source is null");
+            return null;
+        }
+        if (t == null)
+        {
+            Debug.Log("target is null");
+            return null; 
+        }
         // call InSameComponent() to first to find ccs
         if (!InSameComponent(s, t)) 
         {
@@ -56,7 +66,7 @@ public class Graph {
         }
 
         // need a minheap to evaluate the node with lowest cost ! 
-        MinHeap open = new MinHeap(2000); // todo don't hardcode this? 
+        MinHeap open = new MinHeap(20000); // todo don't hardcode this? 
         open.InsertKey(s); 
         HashSet<Node> closed = new HashSet<Node>(); 
 
@@ -110,10 +120,5 @@ public class Graph {
             t = t.comesFrom; 
         }
         return path; 
-    }
-
-    public void MazeGenerator(Node s, Node t) 
-    {
-        // create a maze by creating neighbors for each node  .. start with no neighbors, or start with a neighbor? idk  
     }
 }

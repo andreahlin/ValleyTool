@@ -51,6 +51,7 @@ public class Maze {
     // 2. Choose a cell from C and carve a passage to any unvisited neighbor of that cell. Add that neighbor to C. 
     //    If there are no unvisited neighbors, remove cell from C.
     // 3. Repeat step 2 until empty. 
+    // todo: how do i guarantee that the goal node will be hit? 
     public void GenerateMaze()
     {
         DisplayGrid(); // todo: can get rid of eventually 

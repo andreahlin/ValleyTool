@@ -23,7 +23,7 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // Maze Attempts ///////////////////////////////////
-        Maze m = new Maze(cam);
+        Maze m = new Maze(cam, new Vector3(5, 5, 5), new Vector3(13, 5, 13), 10, 10, 1, new Vector3(5, 5, 5), 0);
         m.GenerateMaze();
 
          //display nodes in debug 
@@ -88,7 +88,9 @@ public class Main : MonoBehaviour
         }
 
         // create a graph for later use
-        g = new Graph(allNodes);
+        //g = new Graph(allNodes);
+        allNodes = m.allNodes; 
+        g = new Graph(allNodes); // no longer allNodes of this class, but the nodes generated from Maze class 
 
         // referencing the character variable todo idk if this should be here ? 
         thePlayer = GameObject.Find("Character");
@@ -154,7 +156,7 @@ public class Main : MonoBehaviour
         //        rend.material.SetColor("_Color", Color.green);
         //    }
         //}
-        //GameObject v2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        ////GameObject v2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         //v2.transform.position = g.GetNodeById(a).position;
         //v2.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
         //Renderer rend2 = v2.GetComponent<Renderer>();
