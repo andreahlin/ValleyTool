@@ -23,15 +23,15 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // Maze Attempts ///////////////////////////////////
-        Maze m = new Maze();
+        Maze m = new Maze(cam);
         m.GenerateMaze();
 
-        // display nodes in debug 
-        foreach (Node node in m.cells)
+         //display nodes in debug 
+        foreach (Node node in m.allNodes)
         {
             node.StartDebugVis(cam);
         }
-        ///////////////////////////////////////////////
+        /////////////////////////////////////////////
 
 
         // find all PathFaces in the scene
