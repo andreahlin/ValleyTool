@@ -109,7 +109,7 @@ public class Graph {
         return null; 
     }
 
-    public List<Node> ReconstructPath(Node s, Node t)
+    private List<Node> ReconstructPath(Node s, Node t)
     {
         List<Node> path = new List<Node>();
         path.Add(t); 
