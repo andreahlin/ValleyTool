@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class Main : MonoBehaviour
 {
-
-    // goal: generate a path on faces which a character will be able to traverse 
     public GameObject[] pathFaces;
     public List<Node> allNodes = new List<Node>();
 
@@ -23,7 +21,7 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // Maze Attempts ///////////////////////////////////
-        Maze m = new Maze(cam, 7, 5, 1);
+        Maze m = new Maze(cam, 10, 10, 1);
         m.GenerateMaze();
 
          //display nodes in debug 
