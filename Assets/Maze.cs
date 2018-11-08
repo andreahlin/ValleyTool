@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//enum Day { Sat, Sun, Mon, Tue, Wed, Thu, Fri };
+public enum GeomType { Start, Goal, Path, NonPath };
 
 public class Maze {
 
     // any special properties? 
     Vector3 start;
-    Vector3 goal;
+    //Vector3 goal;
     public int height; // the x boundary
     public int width; // the z boundary 
     public int depth; // the y boundary
     public Vector3 lowerBoundary; // where the lowest thing is 
     public int difficulty; // user input
-    public Node[,,] grid; // keep track of where the grid is going 
+    public Node[,,] grid; // keep track of where the grid is going
+    public Node[,,] spaceGrid; // the expanded grid 
     public Camera cam;
     public List<Node> allNodes = new List<Node>(); 
 
@@ -25,7 +26,7 @@ public class Maze {
     {
         cam = c; 
         start = new Vector3(0,0,0);
-        goal = new Vector3(4,0,4);
+        //goal = new Vector3(4,0,4);
         height = 5;
         width = 5;
         depth = 1;
@@ -38,7 +39,7 @@ public class Maze {
     {
         cam = c;
         start = new Vector3(0, 0, 0);
-        goal = new Vector3(4, 0, 4);
+        //goal = new Vector3(4, 0, 4);
         height = h;
         width = w;
         depth = d; 
@@ -51,7 +52,7 @@ public class Maze {
     {
         cam = c; 
         start = s;
-        goal = g;
+        //goal = g;
         height = h;
         width = w;
         depth = d;
@@ -177,8 +178,13 @@ public class Maze {
             }
         }
 
-        // now, expand the grid. make a new grid 
-        Node[,,] spaceGrid = new Node[grid.GetLength(0) * 2 - 1,
+        this.ExpandGrid(); 
+    }
+
+    // transfer the nodes to an expaned version of the grid 
+    private void ExpandGrid() 
+    {
+        spaceGrid = new Node[grid.GetLength(0) * 2 - 1,
                                       grid.GetLength(1), // todo: should be resizable like the others  
                                       grid.GetLength(2) * 2 - 1];
 
@@ -197,28 +203,31 @@ public class Maze {
                         node.position.z *= 2f;
                         node.SetBoundaries(); // todo: refactor this to be somewhere else 
 
-                        // todo: put somewhere else, but draw the faces here i guess 
-                        GameObject nFace = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                        nFace.name = "face ";
-                        nFace.transform.position = node.position;
-                        nFace.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                        Renderer rend2 = nFace.GetComponent<Renderer>();
-                        rend2.material.SetColor("_Color", new Color(151f / 255, 152f / 255, 59f / 255));
-                        GameObject container = GameObject.Find("Maze Geom");
-                        nFace.transform.SetParent(container.transform, true);
-
-                        if (nFace.transform.position.Equals(new Vector3(spaceGrid.GetLength(0)-1, spaceGrid.GetLength(1) - 1, spaceGrid.GetLength(2) - 1)))
-                        {
-                            rend2.material.SetColor("_Color", new Color(168f / 255, 0,0));
-                        }
-
-                        // space them out in grid
+                        // place existing nodes into the new SpaceGrid but spaced out 
                         spaceGrid[2 * x, y, 2 * z] = grid[x, y, z];
+
+
+                        if (Vector3.Distance(node.position, 
+                                             new Vector3(spaceGrid.GetLength(0) - 1, 
+                                                         spaceGrid.GetLength(1) - 1, 
+                                                         spaceGrid.GetLength(2) - 1)) < 0.01)
+                        {
+                            CreateFaceGeometry(node, x + y + z, GeomType.Goal);
+                        }
+                        else if (Vector3.Distance(node.position, new Vector3(0, 0, 0)) < 0.01)
+                        {
+                            CreateFaceGeometry(node, x + y + z, GeomType.Start);
+                        }
+                        else 
+                        {
+                            CreateFaceGeometry(node, x + y + z, GeomType.Path);
+                        }
                     }
                 }
             }
         }
-        int count = 0; 
+
+        int count = 0;
         for (int x = 0; x < spaceGrid.GetLength(0); x++)
         {
             for (int y = 0; y < spaceGrid.GetLength(1); y++)
@@ -227,27 +236,54 @@ public class Maze {
                 {
                     if (spaceGrid[x, y, z] == null)
                     {
-                        count++; 
-                        Vector3 currPos = new Vector3(x, y, z); 
+                        count++;
+                        Vector3 currPos = new Vector3(x, y, z);
                         // find if the null grid area is between two existing neighbors 
                         Vector3 next = NextPos(currPos, 0);
                         FindIfInbetween(0, 1, currPos, next, spaceGrid);
-                        //next = NextPos(currPos, 1);
-                        //FindIfInbetween(1, 0, currPos, next, spaceGrid);
                         next = NextPos(currPos, 2);
                         FindIfInbetween(2, 3, currPos, next, spaceGrid);
-                        //next = NextPos(currPos, 3);
-                        //FindIfInbetween(3, 2, currPos, next, spaceGrid);
-
                     }
                 }
             }
         }
     }
-     
+
+    // create a face based on the node and the inputed type ... use enum?
+    private void CreateFaceGeometry(Node n, int name, GeomType type)
+    {
+        // default white 
+        Color color = new Color(1,1,1); 
+        switch (type) 
+        {
+            case GeomType.Goal:
+                color = new Color(168f / 255, 0, 0); 
+                break;
+            case GeomType.Start:
+                color = new Color(141f / 255, 173f / 255, 170f / 255); 
+                break;
+            case GeomType.Path:
+                color = new Color(151f / 255, 152f / 255, 59f / 255); 
+                break;
+            case GeomType.NonPath:
+                color = new Color(183f / 255, 175f / 255, 168f / 255); 
+                break; 
+        }
+
+        GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        face.name = "face " + name;
+        face.transform.position = n.position;
+        face.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+        Renderer rend2 = face.GetComponent<Renderer>();
+        rend2.material.SetColor("_Color", color);
+        GameObject container = GameObject.Find("Maze Geom");
+        face.transform.SetParent(container.transform, true);
+    }
+
+
     private void FindIfInbetween(int dir, int opp, Vector3 curr, Vector3 next, Node[,,] spaceGrid) 
     {
-        Debug.Log("called"); 
+        //Debug.Log("called"); 
         if (next.x >= 0 && next.z >= 0 && next.x < spaceGrid.GetLength(0) && next.z < spaceGrid.GetLength(2))
         {
             if (spaceGrid[(int)next.x, (int)next.y, (int)next.z] != null)
@@ -284,22 +320,6 @@ public class Maze {
             }
         }
     }
-
-    //// check each direction (N S E W). Can you go there? 
-    //List<int> directions = new List<int>();
-    //directions.Add(0);
-    //        directions.Add(1);
-    //        directions.Add(2);
-    //        directions.Add(3);
-    //        directions = RandomizeList(directions);
-
-    //        foreach (int direction in directions)
-    //        {
-    //            Vector3 next = NextPos(curr.position, direction);
-    //int nx = Mathf.FloorToInt(next.x);
-    //int ny = Mathf.FloorToInt(next.y);
-    //int nz = Mathf.FloorToInt(next.z);
-
 
     // fisher-yates shuffle
     private List<int> RandomizeList(List<int> ts)

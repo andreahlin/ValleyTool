@@ -23,7 +23,7 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // Maze Attempts ///////////////////////////////////
-        Maze m = new Maze(cam, 5, 5, 1);
+        Maze m = new Maze(cam, 7, 5, 1);
         m.GenerateMaze();
 
          //display nodes in debug 
