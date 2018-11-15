@@ -203,7 +203,7 @@ public class Node
                         }
                         if (Vector3.Distance(rayThis.origin, this.position) > shortestThis)
                         {
-                            Debug.Log("case 3");
+                            //Debug.Log("case 3");
                             disqualify = true;
                         }
 

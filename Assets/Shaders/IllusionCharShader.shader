@@ -8,7 +8,7 @@
 	SubShader {
 		Tags { "Queue"="Geometry+3" "RenderType"="Opaque" }
 		LOD 200
-
+        ZTest Always 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
 		#pragma surface surf Standard fullforwardshadows

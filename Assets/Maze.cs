@@ -129,9 +129,24 @@ public class Maze {
         // todo idk what's happening here 
         this.ExpandGrid(); 
         this.RenderGeomInGrid(spaceGrid);
-
         CreateAllLadders();
-        List<Node> walkPath = PrunePath(); 
+
+        FindNodeNeighborsInMaze(); 
+
+        //List<Node> walkPath = PrunePath();
+
+        // recompute ? i guess 
+        FindNodeNeighborsInMaze();
+
+    }
+
+    private void FindNodeNeighborsInMaze() // todo this is handled in like so many places my brain hurts 
+    {
+        foreach (Node node in allNodes)
+        {
+            node.FindGeomNeighbors(allNodes, cam);
+            node.FindIllusionNeighbors(allNodes, cam);
+        }
     }
 
     private void CreateAllLadders() 
@@ -201,13 +216,13 @@ public class Maze {
                                         if (Mathf.Abs(cornerShortest - Vector3.Distance(cornerRay.origin, cornerCheck)) < epsilon)
                                         {
                                             // todo: making a face (do we need? probably) 
-                                            //GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                                            //face.name = "ladderX";
-                                            //face.transform.position = worldLadderX;
-                                            //face.transform.localScale = new Vector3(0.1f, 0.1f, 0.05f);
-                                            //face.transform.localEulerAngles = new Vector3(0, 0, 90); 
-                                            //Renderer rend2 = face.GetComponent<Renderer>();
-                                            //rend2.material.SetColor("_Color", Color.white);
+                                            GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                                            face.name = "ladderX";
+                                            face.transform.position = worldLadderX;
+                                            face.transform.localScale = new Vector3(0.1f, 0.1f, 0.05f);
+                                            face.transform.localEulerAngles = new Vector3(0, 0, 90); 
+                                            Renderer rend2 = face.GetComponent<Renderer>();
+                                            rend2.material.SetColor("_Color", Color.white);
 
                                             //make a node there 
                                             Vector3 neighNormal = Vector3.Normalize(new Vector3(-1, 0, 0));
@@ -279,13 +294,13 @@ public class Maze {
                                         if (Mathf.Abs(cornerShortest - Vector3.Distance(cornerRay.origin, cornerCheck)) < epsilon)
                                         {
                                             // todo: making a face (do we need? probably) todo: this isn't the right face 
-                                            //GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                                            //face.name = "ladderZ";
-                                            //face.transform.position = worldLadderZ;
-                                            //face.transform.localEulerAngles = new Vector3(-90, 0, 0);
-                                            //face.transform.localScale = new Vector3(.1f, .1f, .1f);
-                                            //Renderer rend2 = face.GetComponent<Renderer>();
-                                            //rend2.material.SetColor("_Color", Color.white);
+                                            GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                                            face.name = "ladderZ";
+                                            face.transform.position = worldLadderZ;
+                                            face.transform.localEulerAngles = new Vector3(-90, 0, 0);
+                                            face.transform.localScale = new Vector3(.1f, .1f, .1f);
+                                            Renderer rend2 = face.GetComponent<Renderer>();
+                                            rend2.material.SetColor("_Color", Color.white);
 
                                             //make a node there 
                                             Vector3 neighNormal = Vector3.Normalize(new Vector3(0, 0, -1));
@@ -311,18 +326,17 @@ public class Maze {
         foreach (Node n in ladderZNodes) allNodes.Add(n); 
     }
 
+    // similar to Reverse-Delete method 
     public List<Node> PrunePath() 
     {
         // a function which will remove a bunch of nodes until there is only one path available from start to goal
-        // todo: figure out how to delete vis? i mean... don't render them in the first place 
 
-        // create a graph out of all existing Nodes 
+        // create a graph out of all existing Nodes
         Graph g = new Graph(allNodes);
         Vector3 start = new Vector3(0, 0, 0);
         Vector3 target = new Vector3(spaceGrid.GetLength(0) - 1, spaceGrid.GetLength(1) - 1, spaceGrid.GetLength(2) - 1);
         Node s = null;
-        Node t = null; 
-
+        Node t = null;
         foreach (Node n in allNodes) 
         {
             if (n.position.Equals(start)) s = n;
@@ -334,26 +348,40 @@ public class Maze {
             return null;
         }
 
+        int i = 0;
+        int count = allNodes.Count; 
         // check if in same CC 
-        //while (g.InSameComponent(s,t)) 
-        //{
-            // do something 
-        //}
-        //if (g.InSameComponent(s,t)) 
-        //{
-        //    // remove a random node, make a new graph, and do again. 
-        //    Node nodeToThrow = allNodes[1]; 
-        //    if (nodeToThrow.Equals(s) || nodeToThrow.Equals(t)) 
-        //    {
-        //        nodeToThrow = allNodes[2]; 
-        //    }
-        //    //RemoveNode(nodeToThrow); 
-        //    //g = new Graph(allNodes); 
-        //}
-        List<Node> allNodesCopy = allNodes;
-        RemoveNode(allNodesCopy[2]); 
+        while (i < count) 
+        {
+            // remove a random node, make a new graph, and do again. 
+            Node nodeToThrow = allNodes[i]; 
+            if (nodeToThrow.Equals(s) || nodeToThrow.Equals(t)) 
+            {
+                i++; 
+                nodeToThrow = allNodes[i]; 
+            }
 
-        //Debug.Log("no more paths o:"); 
+            // visualize what was thrown away
+            //GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            //marker.transform.position = nodeToThrow.position;
+            //marker.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+
+            RemoveNode(nodeToThrow);
+            count--; 
+
+            if (!g.InSameComponent(s,t))
+            {
+                
+                //add back in the node 
+                allNodes.Add(nodeToThrow);
+                count++; 
+                i++;
+            }
+            else 
+            {
+                g = new Graph(allNodes);
+            }
+        }
 
         return null;
     }
@@ -362,28 +390,33 @@ public class Maze {
     private void RemoveNode(Node n) 
     {
         // remove node from every place it occurred (most importantly, allNodes)  
+        bool found = false;
+        List<Node> neighsContainingN = new List<Node>(); 
         foreach (Node curr in allNodes) 
         {
             if (curr.Equals(n)) 
             {
-                allNodes.Remove(n);
-            }
-            else {
-                // check if it occurs in the neighbor list 
+                found = true; 
                 foreach (Node neigh in curr.neighList)
                 {
-                    if (neigh.Equals(n)) curr.neighList.Remove(n); 
+                    neigh.neighList.Remove(n); 
                 }
             }
         }
+        if (found) allNodes.Remove(n);
+
+        bool foundx = false;
+        bool foundz = false; 
         foreach (Node x in ladderXNodes)
         {
-            if (x.Equals(n)) ladderXNodes.Remove(n);
+            if (x.Equals(n)) foundx = true;
         }
         foreach (Node z in ladderZNodes)
         {
-            if (z.Equals(n)) ladderZNodes.Remove(n); 
+            if (z.Equals(n)) foundz = true;
         }
+        if (foundx) ladderXNodes.Remove(n);
+        if (foundz) ladderZNodes.Remove(n); 
     }
 
     private void RenderGeomInGrid(Node[,,] g)

@@ -1,11 +1,13 @@
 ﻿<Properties StartupConfiguration="{60702674-21F7-D2AC-29BC-7E59A47513C2}|">
   <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="Unity.Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Maze.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Shaders/IllusionCharShader.shader">
     <Files>
-      <File FileName="Assets/Main.cs" Line="30" Column="23" />
-      <File FileName="Assets/Maze.cs" Line="284" Column="17" />
+      <File FileName="Assets/Main.cs" Line="88" Column="1" />
+      <File FileName="Assets/Maze.cs" Line="136" Column="25" />
+      <File FileName="Assets/Graph.cs" Line="45" Column="14" />
+      <File FileName="Assets/Node.cs" Line="206" Column="1" />
       <File FileName="Assets/CharController.cs" Line="73" Column="1" />
-      <File FileName="Assets/Node.cs" Line="126" Column="47" />
+      <File FileName="Assets/Shaders/IllusionCharShader.shader" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />

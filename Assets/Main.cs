@@ -83,8 +83,8 @@ public class Main : MonoBehaviour
         foreach (Node node in allNodes)
         {
             // todo: commetn back in ?  
-            node.FindGeomNeighbors(allNodes, cam);
-            node.FindIllusionNeighbors(allNodes, cam);
+            //node.FindGeomNeighbors(allNodes, cam);
+            //node.FindIllusionNeighbors(allNodes, cam);
             node.StartDebugVis(cam);
         }
 
@@ -97,7 +97,6 @@ public class Main : MonoBehaviour
         playerScript.AssignCurrNode(allNodes);
         // TestingFunction(); 
         ///////////////////////////////////////////////////
-
     }
 
     // Update is called once per frame
