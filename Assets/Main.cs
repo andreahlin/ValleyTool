@@ -11,6 +11,7 @@ public class Main : MonoBehaviour
     CharController playerScript;
     Camera cam; 
     Graph g;
+    Vector3 goalNode; 
 
     public bool debugMode = true; // todo: not using right now
 
@@ -21,7 +22,8 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // Maze Algorithm ///////////////////////////////////
-        Maze m = new Maze(cam, 10,10,1);
+        Maze m = new Maze(cam, 10,10,1); // leaves camera view ~12x12 
+        goalNode = m.goalNode; 
         m.GenerateMaze();
 
          //display nodes in debug 
@@ -85,7 +87,9 @@ public class Main : MonoBehaviour
             // todo: commetn back in ?  
             //node.FindGeomNeighbors(allNodes, cam);
             //node.FindIllusionNeighbors(allNodes, cam);
-            node.StartDebugVis(cam);
+
+
+            //node.StartDebugVis(cam);
         }
 
         // create a graph for later use
@@ -97,6 +101,9 @@ public class Main : MonoBehaviour
         playerScript.AssignCurrNode(allNodes);
         // TestingFunction(); 
         ///////////////////////////////////////////////////
+
+
+        MakePrizes(10); 
     }
 
     // Update is called once per frame
@@ -113,86 +120,59 @@ public class Main : MonoBehaviour
             // USE THAT TO DIRECT THE PATH OF THE CHARACTER
             playerScript.WalkAlongPath(path); 
             //StartCoroutine(playerScript.WalkAlongPath2(path));
-
         }
     }
 
-    void BuildNodeGrid()
+    void MakePrizes(int numPrizes)
     {
-        // 3d case
-        //for (int a = 5; a < 10; a++)
-        //{
-        //    for (int b = 0; b < 5; b++)
-        //    {
-        //        for (int c = 5; c < 10; c++) 
-        //        {
-        //            // create a face for each of the 3 directions 
-        //            GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        //            plane.transform.position = new Vector3(a,b,c);
-        //            plane.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); // new Vector3(0.09f, 0.09f, 0.09f)
-        //            Renderer rend1 = plane.GetComponent<Renderer>();
-        //            rend1.material.SetColor("_Color", Color.green);
+        Color prizeCol = new Color(171 / 255f, 0 / 255f, 0 / 255f);
+        // Big prize (on goal node) 
+        GameObject finalPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        finalPrize.transform.position = goalNode + new Vector3(0,1,0) * 0.5f;
+        finalPrize.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        finalPrize.transform.localEulerAngles = new Vector3(45, 0, 45);
+        Renderer r = finalPrize.GetComponent<Renderer>();
+        r.material.SetColor("_Color", prizeCol);
+        finalPrize.AddComponent<Spin>();
 
-        //            GameObject plane2 = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        //            plane2.transform.eulerAngles = new Vector3(-90, 0, 0);
-        //            plane2.transform.position = new Vector3(a, b + 0.5f, c + 0.5f);
-        //            plane2.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-        //            Renderer rend2 = plane2.GetComponent<Renderer>();
-        //            rend2.material.SetColor("_Color", Color.red);
+        // little prizes 
+        List<Node> mixedList = RandomizeList(allNodes);
+        int count = 0;
+        int index = 0; 
+        while (count < numPrizes)  
+        {
+            Node node = mixedList[index]; 
 
-        //            GameObject plane3 = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        //            plane3.transform.eulerAngles = new Vector3(0, 0, 90);
-        //            plane3.transform.position = new Vector3(a + 0.5f, b + 0.5f, c);
-        //            plane3.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-        //            Renderer rend3 = plane3.GetComponent<Renderer>();
-        //            rend3.material.SetColor("_Color", Color.blue);
-
-        //            // todo: create nodes but do not set their neighbors BRu h
-
-        //            // create a node from each of the faces 
-        //            for (int i = 0; i < 3; i++) 
-        //            {
-        //                GameObject face;
-        //                if (i == 0) face = plane;
-        //                else if (i == 1) face = plane2;
-        //                else face = plane3;
-        //                Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
-        //                Node n = new Node(a, "top", face.transform.position, face.transform.up, face.transform.right);
-        //                float epsilon = 0.01f;
-
-        //                if (normal == new Vector3(0, 1, 0))
-        //                {
-        //                    n = new Node(a, "top", face.transform.position, face.transform.up, face.transform.right);
-        //                }
-        //                else if (normal == new Vector3(-1, 0, 0))
-        //                {
-        //                    n = new Node(a, "negx", face.transform.position, face.transform.up, face.transform.right);
-        //                }
-        //                else if (normal == new Vector3(0, 0, -1))
-        //                {
-        //                    n = new Node(a, "negz", face.transform.position, face.transform.up, face.transform.right);
-        //                }
-        //                else if (normal.x > epsilon || normal.x < -epsilon)
-        //                {
-        //                    if (normal.y > 0)
-        //                    {
-        //                        n = new Node(a, "diagx", face.transform.position, face.transform.up, face.transform.right);
-        //                    }
-        //                }
-        //                else if (normal.z > epsilon || normal.z < -epsilon)
-        //                {
-        //                    if (normal.y > 0)
-        //                    {
-        //                        n = new Node(a, "diagz", face.transform.position, face.transform.up, face.transform.right);
-        //                    }
-        //                }
-
-        //                allNodes.Add(n);
-        //            }
-        //        }
-        //    }
-        //}
+            if (node.up.Equals(new Vector3(0,1,0))) 
+            {
+                GameObject babyPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                babyPrize.transform.position = node.position + node.up * 0.3f;
+                babyPrize.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                babyPrize.transform.localEulerAngles = new Vector3(45, 0, 45);
+                Renderer r1 = babyPrize.GetComponent<Renderer>();
+                r1.material.SetColor("_Color", prizeCol);
+                babyPrize.AddComponent<Spin>();
+                count++;
+            }
+            index++; 
+        }
     }
+
+    // fisher-yates shuffle
+    private List<Node> RandomizeList(List<Node> ts)
+    {
+        var count = ts.Count;
+        var last = count - 1;
+        for (var i = 0; i < last; ++i)
+        {
+            var r = Random.Range(i, count);
+            var tmp = ts[i];
+            ts[i] = ts[r];
+            ts[r] = tmp;
+        }
+        return ts;
+    }
+
 
     void TestingFunction()
     {

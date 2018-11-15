@@ -22,6 +22,7 @@ public class Maze {
     public Node[,,] spaceGrid; // the expanded grid 
     public List<Node> cells = new List<Node>(); // used for the maze algorithm 
     public List<Node> allNodes = new List<Node>(); // used to visualize geometry 
+    public Vector3 goalNode; 
 
     public List<Node> ladderXNodes = new List<Node>(); // ladders
     public List<Node> ladderZNodes = new List<Node>(); // ladders 
@@ -35,6 +36,7 @@ public class Maze {
         difficulty = 1;
         grid = new Node[height, depth, width];
         spaceGrid = new Node[height * 2 - 1, depth * 2 - 1, width * 2 - 1];
+        goalNode = new Vector3(height * 2 - 2, depth * 2 - 2, width * 2 - 2); // todo: probably needs to change 
     }
 
     public Maze(Camera c, int h, int w, int d)
@@ -46,6 +48,7 @@ public class Maze {
         difficulty = 1;
         grid = new Node[height, depth, width];
         spaceGrid = new Node[height * 2 - 1, depth * 2 - 1, width * 2 - 1];
+        goalNode = new Vector3(height * 2 - 2, depth * 2 - 2, width * 2 - 2);
     }
 
     public Maze(Camera c, int h, int w, int d, int diff)
@@ -57,6 +60,7 @@ public class Maze {
         difficulty = diff;
         grid = new Node[height, depth, width];
         spaceGrid = new Node[height * 2 - 1, depth * 2 - 1, width * 2 - 1];
+        goalNode = new Vector3(height * 2 - 2, depth * 2 - 2, width * 2 - 2);
     }
 
     // Growing Tree Algorithm  
@@ -129,14 +133,15 @@ public class Maze {
         // todo idk what's happening here 
         this.ExpandGrid(); 
         this.RenderGeomInGrid(spaceGrid);
-        CreateAllLadders();
+        CreateSomeLadders(10); // todo: could be user in 
+        //CreateAllLadders();
 
         FindNodeNeighborsInMaze(); 
 
         //List<Node> walkPath = PrunePath();
 
         // recompute ? i guess 
-        FindNodeNeighborsInMaze();
+        //FindNodeNeighborsInMaze();
 
     }
 
@@ -147,6 +152,196 @@ public class Maze {
             node.FindGeomNeighbors(allNodes, cam);
             node.FindIllusionNeighbors(allNodes, cam);
         }
+    }
+
+    private void CreateSomeLadders(int numLadders)
+    {
+        int maxXLadders = numLadders / 2;
+        int maxZLadders = numLadders - maxXLadders;
+        int countX = 0;
+        int countZ = 0;
+
+        // shuffle the list 
+        List<Vector3> indicesList = new List<Vector3>();
+        for (int x = 0; x < spaceGrid.GetLength(0); x++)
+        {
+            for (int y = 0; y < spaceGrid.GetLength(1); y++)
+            {
+                for (int z = 0; z < spaceGrid.GetLength(2); z++)
+                {
+                    indicesList.Add(new Vector3(x, y, z)); 
+                }
+            }
+        }
+
+        indicesList = RandomizeListVec3(indicesList); 
+
+        // todo: how to shuffle these indices so they don't get checked in order?
+        foreach (Vector3 point in indicesList) 
+        {
+            int x = (int)point.x;
+            int y = (int)point.y;
+            int z = (int)point.z;
+            if (spaceGrid[x, y, z] != null)
+            {
+                Node node = spaceGrid[x, y, z];
+
+                // X face case ///////////////////////////////////////
+                // check its potential ladders. how? find the position where the nodes could be
+                Vector3 worldLadderX = node.position + new Vector3(-.5f, -.5f, 0);
+                Vector3 xScreenPos = cam.WorldToScreenPoint(worldLadderX);
+
+                // raycast: if you hit it correctly (within epsilon) then create a node there (also face geometry?) 
+                Ray ray = cam.ScreenPointToRay(xScreenPos);
+                RaycastHit[] hits;
+                hits = Physics.RaycastAll(ray, 1000.0F);
+
+                float shortest = Mathf.Infinity;
+                RaycastHit closest = hits[0];
+                for (int i = 0; i < hits.Length; i++)
+                {
+                    RaycastHit hit = hits[i];
+                    if (Vector3.Distance(ray.origin, hit.point) < shortest)
+                    {
+                        shortest = Vector3.Distance(ray.origin, hit.point);
+                        closest = hit;
+                    }
+                }
+                float epsilon = 0.01f;
+                if ((Mathf.Abs(shortest - Vector3.Distance(ray.origin, worldLadderX)) < epsilon))
+                {
+                    // additional raycast check that the ladder is leading down to another node 
+                    Vector3 worldXNeigh = worldLadderX + new Vector3(-.5f, -.5f, 0);
+                    Vector3 xPotScreenPos = cam.WorldToScreenPoint(worldXNeigh);
+                    Ray ray2 = cam.ScreenPointToRay(xPotScreenPos);
+                    RaycastHit hit;
+                    if (Physics.Raycast(ray2, out hit, 1000.0f))
+                    {
+                        // check if the ray cast hit another node 
+                        foreach (Node n in allNodes)
+                        {
+                            if (Vector3.Distance(hit.point, n.position) < epsilon)
+                            {
+                                Vector3 cornerCheck = worldLadderX + new Vector3(0, -.25f, -.25f);
+                                Vector3 cornerCheckScreen = cam.WorldToScreenPoint(cornerCheck);
+                                Ray cornerRay = cam.ScreenPointToRay(cornerCheckScreen);
+                                RaycastHit[] cornerHits;
+                                cornerHits = Physics.RaycastAll(cornerRay, 1000.0F);
+
+                                float cornerShortest = Mathf.Infinity;
+                                RaycastHit cornerClosest = cornerHits[0];
+                                for (int i = 0; i < cornerHits.Length; i++)
+                                {
+                                    RaycastHit cornerHit = cornerHits[i];
+                                    if (Vector3.Distance(cornerRay.origin, cornerHit.point) < cornerShortest)
+                                    {
+                                        cornerShortest = Vector3.Distance(cornerRay.origin, cornerHit.point);
+                                        cornerClosest = cornerHit;
+                                    }
+                                }
+                                //// account for floating point errors in raycasting 
+                                if (Mathf.Abs(cornerShortest - Vector3.Distance(cornerRay.origin, cornerCheck)) < epsilon)
+                                {
+                                    if (countX < maxXLadders)
+                                    {
+                                        GameObject ladder = (GameObject)GameObject.Instantiate(Resources.Load("blackladder"));
+                                        ladder.transform.position = worldLadderX + new Vector3(0.5f, 0, 0);
+
+                                        //make a node there 
+                                        Vector3 neighNormal = Vector3.Normalize(new Vector3(-1, 0, 0));
+                                        Node ladderXNode = new Node(0, "negx", worldLadderX, negX, new Vector3(0, 0, -1f));
+                                        ladderXNodes.Add(ladderXNode);
+
+                                        countX++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                /////////////////////////////////////////////////////////////////////
+                // Z face case 
+                Vector3 worldLadderZ = node.position + new Vector3(0, -.5f, -.5f);
+                Vector3 zScreenPos = cam.WorldToScreenPoint(worldLadderZ);
+
+                // raycast: if you hit it correctly (within epsilon) then create a node there (also face geometry?) 
+                Ray rayForZ = cam.ScreenPointToRay(zScreenPos);
+                RaycastHit[] hitsForZ;
+                hitsForZ = Physics.RaycastAll(rayForZ, 1000.0F);
+
+                float shortestZ = Mathf.Infinity;
+                RaycastHit closestZ = hitsForZ[0];
+                for (int i = 0; i < hitsForZ.Length; i++)
+                {
+                    RaycastHit hitForZ = hitsForZ[i];
+                    if (Vector3.Distance(rayForZ.origin, hitForZ.point) < shortestZ)
+                    {
+                        shortestZ = Vector3.Distance(rayForZ.origin, hitForZ.point);
+                        closestZ = hitForZ;
+                    }
+                }
+                // account for floating point errors in raycasting  
+                if (Mathf.Abs(shortestZ - Vector3.Distance(rayForZ.origin, worldLadderZ)) < epsilon)
+                {
+                    // additional raycast check that the ladder is leading down to another node 
+                    Vector3 worldZNeigh = worldLadderZ + new Vector3(0, -.5f, -.5f);
+
+                    Vector3 zPotScreenPos = cam.WorldToScreenPoint(worldZNeigh);
+                    Ray ray2Z = cam.ScreenPointToRay(zPotScreenPos);
+                    RaycastHit hitz;
+                    if (Physics.Raycast(ray2Z, out hitz, 1000.0f))
+                    {
+                        // check if the raycast hit another node 
+                        foreach (Node n in allNodes)
+                        {
+                            if (Vector3.Distance(hitz.point, n.position) < epsilon)
+                            {
+                                //// todo: CORNER CHECK  
+                                Vector3 cornerCheck = worldLadderZ + new Vector3(-.25f, -.25f, 0);
+                                Vector3 cornerCheckScreen = cam.WorldToScreenPoint(cornerCheck);
+                                Ray cornerRay = cam.ScreenPointToRay(cornerCheckScreen);
+                                RaycastHit[] cornerHits;
+                                cornerHits = Physics.RaycastAll(cornerRay, 1000.0F);
+
+                                float cornerShortest = Mathf.Infinity;
+                                RaycastHit cornerClosest = cornerHits[0];
+                                for (int i = 0; i < cornerHits.Length; i++)
+                                {
+                                    RaycastHit cornerHit = cornerHits[i];
+                                    if (Vector3.Distance(cornerRay.origin, cornerHit.point) < cornerShortest)
+                                    {
+                                        cornerShortest = Vector3.Distance(cornerRay.origin, cornerHit.point);
+                                        cornerClosest = cornerHit;
+                                    }
+                                }
+                                ////// account for floating point errors in raycasting 
+                                if (Mathf.Abs(cornerShortest - Vector3.Distance(cornerRay.origin, cornerCheck)) < epsilon)
+                                {
+                                    if (countZ < maxZLadders)
+                                    {
+                                        GameObject ladder = (GameObject)GameObject.Instantiate(Resources.Load("blackladder"));
+                                        ladder.transform.localEulerAngles = new Vector3(0, -90, 0);
+                                        ladder.transform.position = worldLadderZ + new Vector3(0.0f, 0, 0.5f);
+                                        //make a node there 
+                                        Vector3 neighNormal = Vector3.Normalize(new Vector3(0, 0, -1));
+                                        Node ladderZNode = new Node(0, "negz", worldLadderZ, negZ, new Vector3(1, 0, 0));
+                                        ladderZNodes.Add(ladderZNode);
+
+                                        countZ++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // at the end, add all ladderXnodes and ladderZnodes to the allNodes so they are rendered 
+        foreach (Node n in ladderXNodes) allNodes.Add(n);
+        foreach (Node n in ladderZNodes) allNodes.Add(n);
+
     }
 
     private void CreateAllLadders() 
@@ -215,14 +410,17 @@ public class Maze {
                                         //// account for floating point errors in raycasting 
                                         if (Mathf.Abs(cornerShortest - Vector3.Distance(cornerRay.origin, cornerCheck)) < epsilon)
                                         {
-                                            // todo: making a face (do we need? probably) 
-                                            GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                                            face.name = "ladderX";
-                                            face.transform.position = worldLadderX;
-                                            face.transform.localScale = new Vector3(0.1f, 0.1f, 0.05f);
-                                            face.transform.localEulerAngles = new Vector3(0, 0, 90); 
-                                            Renderer rend2 = face.GetComponent<Renderer>();
-                                            rend2.material.SetColor("_Color", Color.white);
+                                            // todo: making a ladder 
+                                            GameObject ladder = (GameObject)GameObject.Instantiate(Resources.Load("blackladder"));
+                                            ladder.transform.position = worldLadderX + new Vector3(0.5f,0,0);
+
+                                            //GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                                            //face.name = "ladderX";
+                                            //face.transform.position = worldLadderX;
+                                            //face.transform.localScale = new Vector3(0.1f, 0.1f, 0.05f);
+                                            //face.transform.localEulerAngles = new Vector3(0, 0, 90); 
+                                            //Renderer rend2 = face.GetComponent<Renderer>();
+                                            //rend2.material.SetColor("_Color", Color.white);
 
                                             //make a node there 
                                             Vector3 neighNormal = Vector3.Normalize(new Vector3(-1, 0, 0));
@@ -294,13 +492,17 @@ public class Maze {
                                         if (Mathf.Abs(cornerShortest - Vector3.Distance(cornerRay.origin, cornerCheck)) < epsilon)
                                         {
                                             // todo: making a face (do we need? probably) todo: this isn't the right face 
-                                            GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                                            face.name = "ladderZ";
-                                            face.transform.position = worldLadderZ;
-                                            face.transform.localEulerAngles = new Vector3(-90, 0, 0);
-                                            face.transform.localScale = new Vector3(.1f, .1f, .1f);
-                                            Renderer rend2 = face.GetComponent<Renderer>();
-                                            rend2.material.SetColor("_Color", Color.white);
+                                            GameObject ladder = (GameObject)GameObject.Instantiate(Resources.Load("blackladder"));
+                                            ladder.transform.localEulerAngles = new Vector3(0, -90, 0); 
+                                            ladder.transform.position = worldLadderZ + new Vector3(0.0f, 0, 0.5f);
+
+                                            //GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                                            //face.name = "ladderZ";
+                                            //face.transform.position = worldLadderZ;
+                                            //face.transform.localEulerAngles = new Vector3(-90, 0, 0);
+                                            //face.transform.localScale = new Vector3(.1f, .1f, .1f);
+                                            //Renderer rend2 = face.GetComponent<Renderer>();
+                                            //rend2.material.SetColor("_Color", Color.white);
 
                                             //make a node there 
                                             Vector3 neighNormal = Vector3.Normalize(new Vector3(0, 0, -1));
@@ -637,6 +839,20 @@ public class Maze {
             ts[r] = tmp;
         }
         return ts; 
+    }
+
+    private List<Vector3> RandomizeListVec3(List<Vector3> ts)
+    {
+        var count = ts.Count;
+        var last = count - 1;
+        for (var i = 0; i < last; ++i)
+        {
+            var r = Random.Range(i, count);
+            var tmp = ts[i];
+            ts[i] = ts[r];
+            ts[r] = tmp;
+        }
+        return ts;
     }
 
     // return the next position given a direction  

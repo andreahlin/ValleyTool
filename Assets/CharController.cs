@@ -74,7 +74,7 @@ public class CharController : MonoBehaviour {
         {
             if (!nextNode.Equals(path[0])) 
             {
-                Vector3 truePos = nextNode.position + nextNode.up * 0.5f;
+                Vector3 truePos = nextNode.position + nextNode.up * 0.25f;
                 while (!(Vector3.Distance(transform.position, truePos) < 0.01f))
                 {
                     Vector3 nextPos = truePos;
