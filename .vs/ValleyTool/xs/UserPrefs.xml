@@ -2,10 +2,10 @@
   <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="Unity.Editor" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Maze.cs">
     <Files>
-      <File FileName="Assets/Main.cs" Line="26" Column="38" />
-      <File FileName="Assets/Maze.cs" Line="358" Column="1" />
-      <File FileName="Assets/CharController.cs" Line="127" Column="1" />
-      <File FileName="Assets/Node.cs" Line="56" Column="30" />
+      <File FileName="Assets/Main.cs" Line="30" Column="23" />
+      <File FileName="Assets/Maze.cs" Line="284" Column="17" />
+      <File FileName="Assets/CharController.cs" Line="73" Column="1" />
+      <File FileName="Assets/Node.cs" Line="126" Column="47" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
