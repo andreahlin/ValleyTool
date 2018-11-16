@@ -9,32 +9,24 @@ public class CharController : MonoBehaviour {
     Vector3 lookTarget;
     Quaternion playerRot;
     public float rotSpeed = 5f;
-    public float speed = 3f;
+    public float speed = 1f;
     bool moving = false;
-
     Rigidbody rb;
+
+    bool keyButtonPressed = false; 
+
+    // SENT BY THE MAIN CLASS TO BE CONTROLLED OVER HERE .. OK? 
+    public Vector3 keyPos = new Vector3(-1,-1,-1);
+    public GameObject gate1 = null;
+    public GameObject gate2 = null; 
+
+    Vector3 forward = new Vector3(0, 0, 1);
+    Vector3 right = new Vector3(1, 0, 0);
 
 
     public Node currNode; // the node that the character is currently associated with
     public Node targetNode; // the node that the character is closest to from the click 
 
-    // idk what this is tbh 
-    private void OnTriggerEnter(Collider other)
-    {
-        switch (other.tag)
-        {
-            //case "Prize":
-            //    Debug.Log("prize hit"); 
-            //    break;
-            //case "FinalPrize":
-            //    Debug.Log("final prize hit");
-            //    break;
-            //case "Gate":
-            //    break;
-            //case "Key":
-                //break;
-        }
-    }
     private void OnCollisionEnter(Collision collision)
     {
         // todo: include some sort of count 
@@ -46,12 +38,19 @@ public class CharController : MonoBehaviour {
                 break;
             case "FinalPrize":
                 //Debug.Log("final prize hit");
-                Destroy(collision.collider.gameObject);
+                //collision.collider.gameObject.transform.position += new Vector3(0, 1, 0);
+                //collision.collider.gameObject.GetComponent<Rigidbody>.
+                //rigidbody.velocity = Vector3.zero;
+                //rigidbody.angularVelocity = Vector3.zero;
+
+                //Destroy(collision.collider.gameObject);
                 // todo: this is where game over happens 
                 break;
             case "Gate":
+                Debug.Log("collision with gate"); 
                 break;
             case "Key":
+                Debug.Log("collision with key"); 
                 break;
         }
 
@@ -62,21 +61,74 @@ public class CharController : MonoBehaviour {
         rb = GetComponent<Rigidbody>();
     }
 	
-	// Update is called once per frame
-	void Update () {
-        //if (Input.GetMouseButton(0)) // todo comment all this back in? 
-        //{
-        //    SetTargetPosition();
-             
-        //}
-        //if (moving) 
-        //{
-        //    Move();
-        //}
+    void Update()
+    {
+        if (Input.anyKey)
+        {
+            Movem();
+        }
 
+        if (!keyPos.Equals(new Vector3(-1, -1, -1)))
+        {
+            Vector2 pos = new Vector2(transform.position.x, transform.position.z);
+            Vector2 keyPos2 = new Vector2(keyPos.x, keyPos.z);
+            if (Vector2.Distance(pos, keyPos2) < 0.1) // todo: change this .. to much leeway 
+            {
+                // then do something about the gates ... ok 
+                //Debug.Log("PRESEESSSS");
+                MoveGate();
+                keyButtonPressed = true;
+            }
+        }
     }
 
-    public void AssignCurrNode(List<Node> nodesInScene) {
+    void MoveGate()
+    {
+        float gateSpeed = .5f;
+        if (gate1)
+        {
+            if (gate1.transform.position.y > -1) 
+            {
+                gate1.transform.position += new Vector3(0, -1, 0) * gateSpeed * Time.deltaTime;
+            }
+        }
+        if (gate2)
+        {
+            if (gate2.transform.position.y > -1)
+            {
+                gate2.transform.position += new Vector3(0, -1, 0) * gateSpeed * Time.deltaTime;
+            }
+        }
+    }
+
+    void Movem()
+    {
+        Vector3 direction = new Vector3(0, 0, 0);
+        if (Input.GetKey(KeyCode.W)) // +z 
+        {
+            direction = new Vector3(0, 0, 1); 
+        }
+        if (Input.GetKey(KeyCode.S)) // -z 
+        {
+            direction = new Vector3(0, 0, -1);
+        }
+        if (Input.GetKey(KeyCode.D)) // +x 
+        {
+            direction = new Vector3(1,0,0);
+        }
+        if (Input.GetKey(KeyCode.A)) // -x 
+        {
+            direction = new Vector3(-1, 0, 0);
+        }
+        Vector3 movement = direction * speed * Time.deltaTime;
+
+        transform.position += movement;
+        //transform.position += upMovement;
+    }
+
+
+
+public void AssignCurrNode(List<Node> nodesInScene) {
         // find the Node that the char is closest to
         float closestDist = 1000f; 
         foreach (Node n in nodesInScene)

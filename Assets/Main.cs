@@ -13,7 +13,12 @@ public class Main : MonoBehaviour
     CharController playerScript;
     Camera cam; 
     Graph g;
-    Vector3 goalNode;
+    Vector3 goalPos;
+
+    // TO SEND TO CHARCONTROLLER
+    Vector3 keyPos;
+    GameObject gateObjX;
+    GameObject gateObjZ;
 
     // things the user should be able to input
     //int mazeLength;
@@ -35,13 +40,13 @@ public class Main : MonoBehaviour
 
         // Maze Algorithm ///////////////////////////////////
         Maze m = new Maze(cam, 5,5,1); // leaves camera view ~12x12 
-        goalNode = m.goalNode; 
+        goalPos = m.goalPos; 
         m.GenerateMaze();
 
          //display nodes in debug 
         foreach (Node node in m.allNodes)
         {
-            node.StartDebugVis(cam);
+            //node.StartDebugVis(cam);
 
             // add all the nodes from the maze into main todo: good idea? idk 
             allNodes.Add(node);
@@ -117,9 +122,13 @@ public class Main : MonoBehaviour
         // TestingFunction(); 
         ///////////////////////////////////////////////////
 
+        MakeGatePlusKey(); // this needs to go first to lay down the gate 
+        MakePrizes(15);
 
-        MakePrizes(1);
-        MakeGatePlusKey(); 
+        // todo: do something here - send the buttonPos to charController 
+        playerScript.keyPos = keyPos;
+        if (gateObjX) playerScript.gate1 = gateObjX;
+        if (gateObjZ) playerScript.gate2 = gateObjZ; 
     }
 
     // Update is called once per frame
@@ -141,25 +150,84 @@ public class Main : MonoBehaviour
 
     bool MakeGatePlusKey()
     {
-        // check the prize map
+        //todo: how to notify that they have been collided on? 
+        // how to prevent the cube from standing on the gate? 
 
-        // have a thing, then a thing blockie the thing, then blockie go away!!!BOIIIBOIIII 
-        // obstacle tyme boiiii 
-        Color buttonCol = new Color(36 / 255f, 56 / 255f, 36/ 255f);
-        // Big prize (on goal node) 
+        Color buttonCol = new Color(36 / 255f, 56 / 255f, 36 / 255f);
+
+        // potentially 2 gates  
+        Vector3 gateX = goalPos + new Vector3(-1, 0, 0);
+        Vector3 gateZ = goalPos + new Vector3(0, 0, -1);
+        bool needXGate = false;
+        bool needZGate = false;
+        foreach (Node curr in allNodes)
+        {
+            if (curr.position.Equals(gateX)) 
+            {
+                needXGate = true;
+                map[curr] = true; 
+            }
+            else if (curr.position.Equals(gateZ))
+            {
+                needZGate = true;
+                map[curr] = true;
+            }
+        }
+        if (needXGate)
+        {
+            gateObjX = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            gateObjX.transform.position = goalPos + new Vector3(-1, 0.5f, 0);
+            gateObjX.transform.localScale = new Vector3(0.1f, 1f, 0.9f);
+            Renderer r1 = gateObjX.GetComponent<Renderer>();
+            r1.material.SetColor("_Color", buttonCol);
+            //gateObjX.AddComponent<GateAndKey>();
+            gateObjX.tag = "Gate";
+
+            gateObjX.AddComponent<Rigidbody>();
+            gateObjX.GetComponent<Rigidbody>().useGravity = false;
+            gateObjX.GetComponent<Rigidbody>().isKinematic = true;
+
+        }
+        if (needZGate)
+        {
+            gateObjZ = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            gateObjZ.transform.position = goalPos + new Vector3(0, 0.5f, -1);
+            gateObjZ.transform.localScale = new Vector3(0.9f, 1f, 0.1f);
+            Renderer r1 = gateObjZ.GetComponent<Renderer>();
+            r1.material.SetColor("_Color", buttonCol);
+            //gateObjZ.AddComponent<GateAndKey>();
+            gateObjZ.tag = "Gate";
+
+            gateObjZ.AddComponent<Rigidbody>();
+            gateObjZ.GetComponent<Rigidbody>().useGravity = false;
+            gateObjZ.GetComponent<Rigidbody>().isKinematic = true;
+
+        }
+
+        // place the button at random node 
+        var i = Random.Range(0, allNodes.Count);
+        Node n = allNodes[i];
+        while (!(!n.position.Equals(new Vector3(0, 0, 0)) && !n.position.Equals(goalPos) && map[n] == false
+                            && n.up.Equals(new Vector3(0, 1, 0))))
+        {
+            i = Random.Range(0, allNodes.Count);
+            n = allNodes[i];
+        }
+
+        keyPos = n.position; 
         GameObject gateButton = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        gateButton.transform.position = goalNode + new Vector3(-1,0,0); // todo: don't make this hardcoded 
+        gateButton.transform.position = n.position + new Vector3(0,0.05f,0);
         gateButton.transform.localScale = new Vector3(0.3f, 0.1f, 0.3f);
         gateButton.transform.localEulerAngles = new Vector3(0, 45, 0);
-        Renderer r = gateButton.GetComponent<Renderer>();
-        r.material.SetColor("_Color", buttonCol);
+        Renderer r2 = gateButton.GetComponent<Renderer>();
+        r2.material.SetColor("_Color", buttonCol);
+        //gateButton.AddComponent<GateAndKey>();
+        gateButton.tag = "Key"; 
+        gateButton.AddComponent<Rigidbody>();
+        gateButton.GetComponent<Rigidbody>().useGravity = false;
+        gateButton.GetComponent<Rigidbody>().isKinematic = true;
 
-        GameObject gate = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        gate.transform.position = goalNode + new Vector3(0, 0.5f, -1); 
-        gate.transform.localScale = new Vector3(0.9f, 1f, 0.2f);
-        Renderer r1 = gate.GetComponent<Renderer>();
-        r1.material.SetColor("_Color", buttonCol);
-        //gate.AddComponent<Rigidbody>(); 
+        map[n] = true;
 
         return true; 
     }
@@ -174,7 +242,7 @@ public class Main : MonoBehaviour
         Color prizeCol = new Color(171 / 255f, 0 / 255f, 0 / 255f);
         // Big prize (on goal node) 
         GameObject finalPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        finalPrize.transform.position = goalNode + new Vector3(0,1,0) * 0.5f;
+        finalPrize.transform.position = goalPos + new Vector3(0,1,0) * 0.5f;
         finalPrize.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         finalPrize.transform.localEulerAngles = new Vector3(45, 0, 45);
         Renderer r = finalPrize.GetComponent<Renderer>();
@@ -196,7 +264,7 @@ public class Main : MonoBehaviour
             {
                 if (!map[node])
                 {
-                    if (!node.position.Equals(new Vector3(0,0,0)) && !node.position.Equals(goalNode))
+                    if (!node.position.Equals(new Vector3(0,0,0)) && !node.position.Equals(goalPos))
                     {
                         GameObject babyPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         babyPrize.transform.position = node.position + node.up * 0.3f;

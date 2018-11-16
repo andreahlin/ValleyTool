@@ -22,7 +22,7 @@ public class Maze {
     public Node[,,] spaceGrid; // the expanded grid 
     public List<Node> cells = new List<Node>(); // used for the maze algorithm 
     public List<Node> allNodes = new List<Node>(); // used to visualize geometry 
-    public Vector3 goalNode; 
+    public Vector3 goalPos; 
 
     public List<Node> ladderXNodes = new List<Node>(); // ladders
     public List<Node> ladderZNodes = new List<Node>(); // ladders 
@@ -36,7 +36,7 @@ public class Maze {
         difficulty = 1;
         grid = new Node[height, depth, width];
         spaceGrid = new Node[height * 2 - 1, depth * 2 - 1, width * 2 - 1];
-        goalNode = new Vector3(height * 2 - 2, depth * 2 - 2, width * 2 - 2); // todo: probably needs to change 
+        goalPos = new Vector3(height * 2 - 2, depth * 2 - 2, width * 2 - 2); // todo: probably needs to change 
     }
 
     public Maze(Camera c, int h, int w, int d)
@@ -48,7 +48,7 @@ public class Maze {
         difficulty = 1;
         grid = new Node[height, depth, width];
         spaceGrid = new Node[height * 2 - 1, depth * 2 - 1, width * 2 - 1];
-        goalNode = new Vector3(height * 2 - 2, depth * 2 - 2, width * 2 - 2);
+        goalPos = new Vector3(height * 2 - 2, depth * 2 - 2, width * 2 - 2);
     }
 
     public Maze(Camera c, int h, int w, int d, int diff)
@@ -60,7 +60,7 @@ public class Maze {
         difficulty = diff;
         grid = new Node[height, depth, width];
         spaceGrid = new Node[height * 2 - 1, depth * 2 - 1, width * 2 - 1];
-        goalNode = new Vector3(height * 2 - 2, depth * 2 - 2, width * 2 - 2);
+        goalPos = new Vector3(height * 2 - 2, depth * 2 - 2, width * 2 - 2);
     }
 
     // Growing Tree Algorithm  
@@ -133,7 +133,7 @@ public class Maze {
         // todo idk what's happening here 
         this.ExpandGrid(); 
         this.RenderGeomInGrid(spaceGrid);
-        CreateSomeLadders(2); // todo: make it a user in 
+        CreateSomeLadders(10); // todo: make it a user in 
         //CreateAllLadders();
 
         FindNodeNeighborsInMaze(); 
