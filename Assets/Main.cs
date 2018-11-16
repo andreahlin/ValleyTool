@@ -39,7 +39,7 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // Maze Algorithm ///////////////////////////////////
-        Maze m = new Maze(cam, 5,5,1); // leaves camera view ~12x12 
+        Maze m = new Maze(cam, 10,7,1); // leaves camera view ~12x12 
         goalPos = m.goalPos; 
         m.GenerateMaze();
 
@@ -67,7 +67,6 @@ public class Main : MonoBehaviour
 
         for (int i = 0; i < pathFaces.Length; i++)
         {
-            
             GameObject face = pathFaces[i];
             Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
             Node n = new Node(i, "top", face.transform.position, face.transform.up, face.transform.right);  
@@ -123,7 +122,7 @@ public class Main : MonoBehaviour
         ///////////////////////////////////////////////////
 
         MakeGatePlusKey(); // this needs to go first to lay down the gate 
-        MakePrizes(15);
+        MakePrizes(10);
 
         // todo: do something here - send the buttonPos to charController 
         playerScript.keyPos = keyPos;

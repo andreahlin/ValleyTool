@@ -132,8 +132,9 @@ public class Maze {
         // transfer all the nodes to the expanded grid for alterations! 
         // todo idk what's happening here 
         this.ExpandGrid(); 
-        this.RenderGeomInGrid(spaceGrid);
+        this.RenderGeomInGrid(spaceGrid); //spaceGrid
         CreateSomeLadders(10); // todo: make it a user in 
+
         //CreateAllLadders();
 
         FindNodeNeighborsInMaze(); 

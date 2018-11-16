@@ -37,9 +37,11 @@ public class CharController : MonoBehaviour {
                 Destroy(collision.collider.gameObject);
                 break;
             case "FinalPrize":
+                Destroy(collision.collider.gameObject);
+
                 //Debug.Log("final prize hit");
                 //collision.collider.gameObject.transform.position += new Vector3(0, 1, 0);
-                //collision.collider.gameObject.GetComponent<Rigidbody>.
+                //collision.collider.gameObject.GetComponent<Rigidbody>;
                 //rigidbody.velocity = Vector3.zero;
                 //rigidbody.angularVelocity = Vector3.zero;
 
@@ -68,11 +70,12 @@ public class CharController : MonoBehaviour {
             Movem();
         }
 
+        // checking if the key button was pressed 
         if (!keyPos.Equals(new Vector3(-1, -1, -1)))
         {
             Vector2 pos = new Vector2(transform.position.x, transform.position.z);
             Vector2 keyPos2 = new Vector2(keyPos.x, keyPos.z);
-            if (Vector2.Distance(pos, keyPos2) < 0.1) // todo: change this .. to much leeway 
+            if (Vector2.Distance(pos, keyPos2) < 0.3) // todo: change this .. to much leeway 
             {
                 // then do something about the gates ... ok 
                 //Debug.Log("PRESEESSSS");
@@ -106,6 +109,7 @@ public class CharController : MonoBehaviour {
         Vector3 direction = new Vector3(0, 0, 0);
         if (Input.GetKey(KeyCode.W)) // +z 
         {
+            // check if the next step is a gate 
             direction = new Vector3(0, 0, 1); 
         }
         if (Input.GetKey(KeyCode.S)) // -z 
@@ -114,6 +118,7 @@ public class CharController : MonoBehaviour {
         }
         if (Input.GetKey(KeyCode.D)) // +x 
         {
+            // check if the next step is a gate 
             direction = new Vector3(1,0,0);
         }
         if (Input.GetKey(KeyCode.A)) // -x 
