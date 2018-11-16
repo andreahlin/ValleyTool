@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Spin : MonoBehaviour {
 
-    public float speed = 40f;
+    public float speed = 60f;
 
     // Use this for initialization
     void Start () {

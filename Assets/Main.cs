@@ -6,12 +6,24 @@ public class Main : MonoBehaviour
 {
     public GameObject[] pathFaces;
     public List<Node> allNodes = new List<Node>();
+    // keeps track of whether something is on the node already 
+    public Dictionary<Node, bool> map = new Dictionary<Node, bool>();
 
     GameObject thePlayer;
     CharController playerScript;
     Camera cam; 
     Graph g;
-    Vector3 goalNode; 
+    Vector3 goalNode;
+
+    // things the user should be able to input
+    //int mazeLength;
+    //int mazeWidth;
+    //int numPrizes;
+    //int prizeScore;
+    //int obstacleOption; 
+    //int characterChoice;
+    //int themeChoice;
+    // int jams? ; 
 
     public bool debugMode = true; // todo: not using right now
 
@@ -22,18 +34,23 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // Maze Algorithm ///////////////////////////////////
-        Maze m = new Maze(cam, 10,10,1); // leaves camera view ~12x12 
+        Maze m = new Maze(cam, 5,5,1); // leaves camera view ~12x12 
         goalNode = m.goalNode; 
         m.GenerateMaze();
 
          //display nodes in debug 
         foreach (Node node in m.allNodes)
         {
-            //node.StartDebugVis(cam);
+            node.StartDebugVis(cam);
 
             // add all the nodes from the maze into main todo: good idea? idk 
-            allNodes.Add(node); 
+            allNodes.Add(node);
+            map.Add(node, false); 
         }
+
+         //create a graph for later use
+        g = new Graph(m.allNodes); // todo: make it allNodes instead of m.allNodes   
+
         ///////////////////////////////////////////////////
 
 
@@ -92,8 +109,6 @@ public class Main : MonoBehaviour
             //node.StartDebugVis(cam);
         }
 
-        // create a graph for later use
-        g = new Graph(m.allNodes); // todo: make it allNodes instead of m.allNodes   
 
         // referencing the character variable todo idk if this should be here ? 
         thePlayer = GameObject.Find("Character");
@@ -103,13 +118,14 @@ public class Main : MonoBehaviour
         ///////////////////////////////////////////////////
 
 
-        MakePrizes(10); 
+        MakePrizes(1);
+        MakeGatePlusKey(); 
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Used for Character Movement   
+        // Used for Character Movement   // todo: distinguish between mouse click ? i guass 
         if (Input.GetMouseButtonUp(0)) // when mouseclick is released (once per click)
         {
             playerScript.SetTargetPosition(allNodes);
@@ -123,8 +139,38 @@ public class Main : MonoBehaviour
         }
     }
 
-    void MakePrizes(int numPrizes)
+    bool MakeGatePlusKey()
     {
+        // check the prize map
+
+        // have a thing, then a thing blockie the thing, then blockie go away!!!BOIIIBOIIII 
+        // obstacle tyme boiiii 
+        Color buttonCol = new Color(36 / 255f, 56 / 255f, 36/ 255f);
+        // Big prize (on goal node) 
+        GameObject gateButton = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        gateButton.transform.position = goalNode + new Vector3(-1,0,0); // todo: don't make this hardcoded 
+        gateButton.transform.localScale = new Vector3(0.3f, 0.1f, 0.3f);
+        gateButton.transform.localEulerAngles = new Vector3(0, 45, 0);
+        Renderer r = gateButton.GetComponent<Renderer>();
+        r.material.SetColor("_Color", buttonCol);
+
+        GameObject gate = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        gate.transform.position = goalNode + new Vector3(0, 0.5f, -1); 
+        gate.transform.localScale = new Vector3(0.9f, 1f, 0.2f);
+        Renderer r1 = gate.GetComponent<Renderer>();
+        r1.material.SetColor("_Color", buttonCol);
+        //gate.AddComponent<Rigidbody>(); 
+
+        return true; 
+    }
+
+    bool MakePrizes(int numPrizes)
+    {
+        if (allNodes.Count < 1)
+        {
+            Debug.Log("allNodes is empty, cannot make prizes");
+            return false; 
+        }
         Color prizeCol = new Color(171 / 255f, 0 / 255f, 0 / 255f);
         // Big prize (on goal node) 
         GameObject finalPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -134,6 +180,9 @@ public class Main : MonoBehaviour
         Renderer r = finalPrize.GetComponent<Renderer>();
         r.material.SetColor("_Color", prizeCol);
         finalPrize.AddComponent<Spin>();
+        finalPrize.tag = "FinalPrize";
+        finalPrize.AddComponent<Rigidbody>();
+        finalPrize.GetComponent<Rigidbody>().useGravity = false; 
 
         // little prizes 
         List<Node> mixedList = RandomizeList(allNodes);
@@ -145,17 +194,29 @@ public class Main : MonoBehaviour
 
             if (node.up.Equals(new Vector3(0,1,0))) 
             {
-                GameObject babyPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                babyPrize.transform.position = node.position + node.up * 0.3f;
-                babyPrize.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-                babyPrize.transform.localEulerAngles = new Vector3(45, 0, 45);
-                Renderer r1 = babyPrize.GetComponent<Renderer>();
-                r1.material.SetColor("_Color", prizeCol);
-                babyPrize.AddComponent<Spin>();
-                count++;
+                if (!map[node])
+                {
+                    if (!node.position.Equals(new Vector3(0,0,0)) && !node.position.Equals(goalNode))
+                    {
+                        GameObject babyPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        babyPrize.transform.position = node.position + node.up * 0.3f;
+                        babyPrize.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                        babyPrize.transform.localEulerAngles = new Vector3(45, 0, 45);
+                        Renderer r1 = babyPrize.GetComponent<Renderer>();
+                        r1.material.SetColor("_Color", prizeCol);
+                        babyPrize.AddComponent<Spin>();
+                        babyPrize.tag = "Prize";
+                        babyPrize.AddComponent<Rigidbody>();
+                        babyPrize.GetComponent<Rigidbody>().useGravity = false;
+
+                        count++;
+                        map[node] = true;
+                    }
+                }
             }
             index++; 
         }
+        return true; 
     }
 
     // fisher-yates shuffle

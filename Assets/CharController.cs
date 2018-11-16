@@ -18,8 +18,47 @@ public class CharController : MonoBehaviour {
     public Node currNode; // the node that the character is currently associated with
     public Node targetNode; // the node that the character is closest to from the click 
 
-	// Use this for initialization
-	void Start () {
+    // idk what this is tbh 
+    private void OnTriggerEnter(Collider other)
+    {
+        switch (other.tag)
+        {
+            //case "Prize":
+            //    Debug.Log("prize hit"); 
+            //    break;
+            //case "FinalPrize":
+            //    Debug.Log("final prize hit");
+            //    break;
+            //case "Gate":
+            //    break;
+            //case "Key":
+                //break;
+        }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        // todo: include some sort of count 
+        switch (collision.gameObject.tag)
+        {
+            case "Prize":
+                //Debug.Log("prize hit");
+                Destroy(collision.collider.gameObject);
+                break;
+            case "FinalPrize":
+                //Debug.Log("final prize hit");
+                Destroy(collision.collider.gameObject);
+                // todo: this is where game over happens 
+                break;
+            case "Gate":
+                break;
+            case "Key":
+                break;
+        }
+
+    }
+
+    // Use this for initialization
+    void Start () {
         rb = GetComponent<Rigidbody>();
     }
 	
@@ -34,6 +73,7 @@ public class CharController : MonoBehaviour {
         //{
         //    Move();
         //}
+
     }
 
     public void AssignCurrNode(List<Node> nodesInScene) {

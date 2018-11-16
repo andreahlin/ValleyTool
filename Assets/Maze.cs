@@ -133,7 +133,7 @@ public class Maze {
         // todo idk what's happening here 
         this.ExpandGrid(); 
         this.RenderGeomInGrid(spaceGrid);
-        CreateSomeLadders(10); // todo: could be user in 
+        CreateSomeLadders(2); // todo: make it a user in 
         //CreateAllLadders();
 
         FindNodeNeighborsInMaze(); 

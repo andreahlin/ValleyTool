@@ -157,6 +157,11 @@ public class Node
                         hits = Physics.RaycastAll(ray, 1000.0F);
 
                         float shortest = Mathf.Infinity;
+                        if (hits.Length < 1) 
+                        {
+                            Debug.Log("raycast did not hit anything"); 
+                            return;
+                        }
                         RaycastHit closest = hits[0]; 
                         for (int i = 0; i < hits.Length; i++)
                         {

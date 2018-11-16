@@ -6,6 +6,10 @@ TagManager:
   tags:
   - PathFace
   - IllusionFace
+  - Prize
+  - FinalPrize
+  - Gate
+  - Key
   layers:
   - Default
   - TransparentFX
