@@ -65,7 +65,7 @@ public class CharController : MonoBehaviour {
 	
     void Update()
     {
-        if (Input.anyKey)
+        if (Input.anyKeyDown)
         {
             Movem();
         }
@@ -106,49 +106,235 @@ public class CharController : MonoBehaviour {
 
     void Movem()
     {
-        Vector3 direction = new Vector3(0, 0, 0);
-        if (Input.GetKey(KeyCode.W)) // +z 
-        {
-            // check if the next step is a gate 
-            direction = new Vector3(0, 0, 1); 
-        }
-        if (Input.GetKey(KeyCode.S)) // -z 
-        {
-            direction = new Vector3(0, 0, -1);
-        }
-        if (Input.GetKey(KeyCode.D)) // +x 
-        {
-            // check if the next step is a gate 
-            direction = new Vector3(1,0,0);
-        }
-        if (Input.GetKey(KeyCode.A)) // -x 
-        {
-            direction = new Vector3(-1, 0, 0);
-        }
-        Vector3 movement = direction * speed * Time.deltaTime;
+        // todo: check if the next step is a gate !!!!! 
 
-        transform.position += movement;
-        //transform.position += upMovement;
+        bool move = false;
+        Node newCurr = null;
+        Dictionary<string, Vector3> potentialDir = new Dictionary<string, Vector3>();
+
+        Vector3 charDisplacement = new Vector3(0,0,0);// = new Vector3(-1, -1, -1);
+
+        if (Input.GetKeyDown(KeyCode.W)) // +z 
+        {
+            Debug.Log("w key hit");
+            potentialDir.Add("plane", new Vector3(0, 0, 1));
+            potentialDir.Add("realLadderPosZ", new Vector3(0, .5f, .5f));
+            potentialDir.Add("unrealLadderPosZ", new Vector3(-1, .5f, -1.5f));
+        }
+        else if (Input.GetKeyDown(KeyCode.S)) // -z 
+        {
+            Debug.Log("s key hit");
+            potentialDir.Add("plane", new Vector3(0, 0, -1));
+            potentialDir.Add("realLadderNegZ", new Vector3(0, -.5f, -.5f));
+            potentialDir.Add("unrealLadderNegZ", new Vector3(1, -.5f, 1.5f));
+        }
+        else if (Input.GetKeyDown(KeyCode.D)) // +x 
+        {
+            Debug.Log("d key hit");
+            potentialDir.Add("plane", new Vector3(1, 0, 0));
+            potentialDir.Add("realLadderPosX", new Vector3(.5f, .5f, 0));
+            potentialDir.Add("unrealLadderPosX", new Vector3(-1.5f, .5f, -1));
+        }
+        else if (Input.GetKeyDown(KeyCode.A)) // -x 
+        {
+            Debug.Log("a key hit");
+            potentialDir.Add("plane", new Vector3(-1, 0, 0));
+            potentialDir.Add("realLadderPosX", new Vector3(-.5f, -.5f, 0));
+            potentialDir.Add("unrealLadderPosX", new Vector3(1.5f, -.5f, 1));
+        }
+        foreach (KeyValuePair<string, Vector3> pair in potentialDir)
+        {
+            if (currNode != null)
+            {
+                Vector3 direction = pair.Value;
+                Vector3 dirToCheck = currNode.position + direction;
+
+                foreach (Node n in currNode.neighList)
+                {
+                    // checks if one of the neighbors can be walked to 
+                    if (Vector3.Distance(dirToCheck, n.position) < 0.01)
+                    {
+                        // check what kind of neighbor we're dealing with
+                        switch (pair.Key)
+                        {
+                            // todo: why is the realLadder case bugging out when you go back and forth ???? IDK 
+                            case "plane":
+                                Debug.Log("plane");
+                                if (charDisplacement.Equals(new Vector3(0,0,0)))
+                                {
+                                    charDisplacement = direction;
+                                }
+                                // direction; // vanilla 
+                                break;
+                            case "realLadderPosZ":
+                                Debug.Log("realLadderPosZ");
+
+                                //charDisplacement = new Vector3(0, 0.75f, 0.75f); // todo: hard coded for a char with scale (.5,.5,.5) ):< bad
+                                break;
+                            case "unrealLadderPosZ":
+                                Debug.Log("unrealLadderPosZ");
+
+                                break;
+                            case "realLadderNegZ":
+                                Debug.Log("realLadderNegZ");
+
+                                //charDisplacement = new Vector3(0, -0.75f, -0.75f);
+                                break;
+                            case "unrealLadderNegZ":
+                                Debug.Log("unrealLadderNegZ");
+
+                                break;
+                            case "realLadderPosX":
+                                Debug.Log("realLadderPosX");
+
+                                //charDisplacement = new Vector3(0.75f, 0.75f, 0);
+                                break;
+                            case "unrealLadderPosX":
+                                Debug.Log("unrealLadderPosX");
+
+                                break;
+                            case "realLadderNegX":
+                                Debug.Log("realLadderNegX");
+
+                                //charDisplacement = new Vector3(-0.75f, -0.75f, 0);
+                                break;
+                            case "unrealLadderNegX":
+                                Debug.Log("unrealLadderNegX");
+
+                                break;
+                            default:
+                                Debug.Log("didn't find a direction... BUG ooo:");
+                                return; 
+                        }
+
+                        move = true;
+                        newCurr = n; 
+                    }
+                }
+            }
+            if (move)
+            {
+                Debug.Log("direction taken: " + charDisplacement); 
+                transform.position += charDisplacement * 1/3f; // todo: right now it's skipping, would like for it to have a smooth movement 
+                // todo: why is the position freakin 1/3???? 
+                AssignCurrNode(newCurr);
+                Debug.Log("new node pos: " + newCurr.position);
+            }
+            //////////////////////////////
+
+            //foreach (Vector3 direction in potentialDirections) 
+            //{
+            //    Vector3 dirToCheck = currNode.position + direction;
+
+            //    //Debug.Log("direction checking: " + dirToCheck); 
+            //    // check if it is one of the planar neighbors 
+            //    foreach (Node n in currNode.neighList)
+            //    {
+            //        //Debug.Log("neighbor position: " + n.position); 
+            //        if (Vector3.Distance(dirToCheck, n.position) < 0.01)
+            //        {
+            //            // checking for ladders 
+            //            if (Mathf.Abs(direction.y) > 0.01f) 
+            //            {
+            //                switch (ladderType) 
+            //                {
+            //                    // TODO: FIX THIS JAWNS 
+            //                    case "ladderPosZ": // todo: there are multiple cases. how to distinguish? 
+            //                        //trueDir = new Vector3(0, (1 - this.transform.localScale.y) * .5f, 
+            //                        //(1 - this.transform.localScale.z) * .5f);
+            //                        trueDir = new Vector3(0, 0.75f, 0.75f); // todo: this is specific to a cube that is scaled to (.5,.5,.5) oo: 
+            //                        // this is also for the OVER CORNER CASE!!!! todo 
+            //                        break;
+            //                    case "ladderNegZ":
+            //                        //trueDir = new Vector3(0, (1 - this.transform.localScale.y) * -.5f, 
+            //                        //(1 - this.transform.localScale.z) * -.5f);
+            //                        trueDir = new Vector3(0, -0.75f, -0.75f);
+
+            //                        break;
+            //                    case "ladderPosX":
+            //                        //trueDir = new Vector3((1 - this.transform.localScale.x) * .5f,
+            //                        //(1 - this.transform.localScale.y) * .5f, 0);
+            //                        trueDir = new Vector3(0.75f, 0.75f, 0);
+            //                        break;
+            //                    case "ladderNegX":
+            //                        //trueDir = new Vector3((1 - this.transform.localScale.x) * -.5f,
+            //                        //(1 - this.transform.localScale.y) * -.5f, 0);
+            //                        trueDir = new Vector3(-0.75f, -0.75f, 0);
+
+            //                        break;
+            //                    default:
+            //                        Debug.Log("didn't find anyhin ooo:");
+            //                        return;
+            //                }
+            //                //if (direction.y > 0) 
+            //                //{
+            //                //    Vector3 scaledDir = new Vector3((1 - this.transform.localScale.x) * .5f, 
+            //                //                                    (1 - this.transform.localScale.y) * .5f, 
+            //                //                                    (1 - this.transform.localScale.z) * .5f);
+            //                //    trueDir = scaledDir;
+            //                //}
+            //                //else if (direction.y < 0) 
+            //                //{
+            //                //    // going down (negative)
+            //                //    Vector3 scaledDir = new Vector3((-1 + this.transform.localScale.x) * .5f, 
+            //                //                                    (-1 + this.transform.localScale.y) * .5f, 
+            //                //                                    (-1 + this.transform.localScale.z) * .5f);
+            //                //    trueDir = scaledDir;
+            //                //}
+            //            }
+            //            else {
+            //                trueDir = direction;
+            //            }
+            //            //trueDir = direction; 
+            //            move = true;
+            //            newCurr = n;
+            //        }
+            //    }
+            //}
+            //if (move)
+            //{
+            //    transform.position += direction; // todo: right now it's skipping, would like for it to have a smooth movement 
+            //    AssignCurrNode(newCurr);
+            //    Debug.Log("new node pos: " + newCurr.position);
+            //}
+
+            //Vector3 movement = direction;// direction * speed * Time.deltaTime;
+            //transform.position += movement;
+        }
+
+    }
+
+
+    bool CanWalk(Vector3 direction) 
+    {
+        // well you should always be on a node ? i guess so? 
+        // what to check: if you are <0.5 from any given node
+        // NEEDS TO BE A NODE BASED SYS??????AJGJSLKDGJ:LAJ
+        // check: for gates  
+        return true; 
     }
 
 
 
-public void AssignCurrNode(List<Node> nodesInScene) {
+    public void AssignFirstCurrNode(List<Node> nodesInScene)
+    {
         // find the Node that the char is closest to
-        float closestDist = 1000f; 
+        float closestDist = 1000f;
         foreach (Node n in nodesInScene)
         {
             float dist = Vector3.Distance(this.transform.position, n.position);
 
-            if (dist <= 0.51f) 
+            if (dist <= 0.51f)
             {
                 if (dist < closestDist)
                 {
                     currNode = n;
-                    closestDist = dist; 
+                    closestDist = dist;
                 }
             }
         }
+        
+        Debug.Log("current node position: " + currNode.position); 
 
         // todo throw error if no current node is found ... stop game? 
 
@@ -158,12 +344,40 @@ public void AssignCurrNode(List<Node> nodesInScene) {
         //visPos.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
         //Renderer rend = visPos.GetComponent<Renderer>();
         //rend.material.SetColor("_Color", Color.black);
-
-        // find the nearest Node to the mouse click (in another function rn) 
-        // run pathfinding and find the path list
-        // move through the path list Node by Node until character reaches target
-
     }
+
+    //public void AssignNextNode(Node lastNode)
+    //{
+    //    if (lastNode != null) 
+    //    {
+    //        List<Node> nodesToConsider = lastNode.neighList;
+    //        nodesToConsider.Add(lastNode);
+    //        float closestDist = 1000f;
+    //        foreach (Node n in nodesToConsider)
+    //        {
+    //            float dist = Vector3.Distance(this.transform.position, n.position);
+    //            if (dist <= 0.51f)
+    //            {
+    //                if (dist < closestDist)
+    //                {
+    //                    currNode = n;
+    //                    closestDist = dist;
+    //                }
+    //            }
+    //        }
+    //        if (closestDist > 999f)
+    //        {
+    //           // currNode = null;
+    //            // todo: if no next node is found, then return the original node? 
+    //        }
+    //    }
+    //}
+
+    public void AssignCurrNode(Node n)
+    {
+        currNode = n; 
+    }
+
 
     public void WalkAlongPath(List<Node> path)
     {

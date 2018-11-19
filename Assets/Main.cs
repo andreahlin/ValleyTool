@@ -39,7 +39,7 @@ public class Main : MonoBehaviour
         cam = Camera.main;
 
         // Maze Algorithm ///////////////////////////////////
-        Maze m = new Maze(cam, 10,7,1); // leaves camera view ~12x12 
+        Maze m = new Maze(cam, 10,10,1); // leaves camera view ~12x12 
         goalPos = m.goalPos; 
         m.GenerateMaze();
 
@@ -117,7 +117,7 @@ public class Main : MonoBehaviour
         // referencing the character variable todo idk if this should be here ? 
         thePlayer = GameObject.Find("Character");
         playerScript = thePlayer.GetComponent<CharController>();
-        playerScript.AssignCurrNode(allNodes);
+        playerScript.AssignFirstCurrNode(allNodes);
         // TestingFunction(); 
         ///////////////////////////////////////////////////
 
@@ -134,7 +134,7 @@ public class Main : MonoBehaviour
     void Update()
     {
         // Used for Character Movement   // todo: distinguish between mouse click ? i guass 
-        if (Input.GetMouseButtonUp(0)) // when mouseclick is released (once per click)
+        if (Input.GetMouseButtonDown(0)) // when mouseclick is released (once per click)
         {
             playerScript.SetTargetPosition(allNodes);
 
