@@ -133,7 +133,7 @@ public class Maze {
         // todo idk what's happening here 
         this.ExpandGrid(); 
         this.RenderGeomInGrid(spaceGrid); //spaceGrid
-        CreateSomeLadders(0); // todo: make it a user in 
+        CreateSomeLadders(30); // todo: make it a user in 
 
         //CreateAllLadders();
 
