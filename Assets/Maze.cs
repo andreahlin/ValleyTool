@@ -157,6 +157,9 @@ public class Maze {
 
     private void CreateSomeLadders(int numLadders)
     {
+        GameObject ladderGeom = new GameObject();
+        ladderGeom.name = "Ladder Geometry";
+
         int maxXLadders = numLadders / 2;
         int maxZLadders = numLadders - maxXLadders;
         int countX = 0;
@@ -240,13 +243,16 @@ public class Maze {
                                         cornerClosest = cornerHit;
                                     }
                                 }
-                                //// account for floating point errors in raycasting 
+                                // account for floating point errors in raycasting 
                                 if (Mathf.Abs(cornerShortest - Vector3.Distance(cornerRay.origin, cornerCheck)) < epsilon)
                                 {
                                     if (countX < maxXLadders)
                                     {
                                         GameObject ladder = (GameObject)GameObject.Instantiate(Resources.Load("blackladder"));
                                         ladder.transform.position = worldLadderX + new Vector3(0.5f, 0, 0);
+                                        ladder.transform.SetParent(ladderGeom.transform, true);
+                                        ladder.name = "x Ladder"; 
+                                        //ladder.name = "Ladder"; 
 
                                         //make a node there 
                                         Vector3 neighNormal = Vector3.Normalize(new Vector3(-1, 0, 0));
@@ -324,7 +330,10 @@ public class Maze {
                                         GameObject ladder = (GameObject)GameObject.Instantiate(Resources.Load("blackladder"));
                                         ladder.transform.localEulerAngles = new Vector3(0, -90, 0);
                                         ladder.transform.position = worldLadderZ + new Vector3(0.0f, 0, 0.5f);
+                                        ladder.transform.SetParent(ladderGeom.transform, true);
                                         //make a node there 
+                                        ladder.name = "z Ladder";
+
                                         Vector3 neighNormal = Vector3.Normalize(new Vector3(0, 0, -1));
                                         Node ladderZNode = new Node(0, "negz", worldLadderZ, negZ, new Vector3(1, 0, 0));
                                         ladderZNodes.Add(ladderZNode);
@@ -347,6 +356,9 @@ public class Maze {
 
     private void CreateAllLadders() 
     {
+        GameObject ladderGeom = new GameObject();
+        ladderGeom.name = "Ladder Geometry";
+
         for (int x = 0; x < spaceGrid.GetLength(0); x++) {
             for (int y = 0; y < spaceGrid.GetLength(1); y++) {
                 for (int z = 0; z < spaceGrid.GetLength(2); z++) {
@@ -414,6 +426,8 @@ public class Maze {
                                             // todo: making a ladder 
                                             GameObject ladder = (GameObject)GameObject.Instantiate(Resources.Load("blackladder"));
                                             ladder.transform.position = worldLadderX + new Vector3(0.5f,0,0);
+                                            ladder.transform.SetParent(ladderGeom.transform, true);
+                                            ladder.name = "x Ladder";
 
                                             //GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
                                             //face.name = "ladderX";
@@ -496,6 +510,8 @@ public class Maze {
                                             GameObject ladder = (GameObject)GameObject.Instantiate(Resources.Load("blackladder"));
                                             ladder.transform.localEulerAngles = new Vector3(0, -90, 0); 
                                             ladder.transform.position = worldLadderZ + new Vector3(0.0f, 0, 0.5f);
+                                            ladder.transform.SetParent(ladderGeom.transform, true);
+                                            ladder.name = "z Ladder";
 
                                             //GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
                                             //face.name = "ladderZ";
@@ -762,7 +778,7 @@ public class Maze {
         face.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
         Renderer rend2 = face.GetComponent<Renderer>();
         rend2.material.SetColor("_Color", color);
-        GameObject container = GameObject.Find("Maze Geom");
+        GameObject container = GameObject.Find("Maze Geometry");
         face.transform.SetParent(container.transform, true);
     }
 
@@ -793,7 +809,7 @@ public class Maze {
         f1.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
         Renderer r1 = f1.GetComponent<Renderer>();
         r1.material.SetColor("_Color", color);
-        GameObject container = GameObject.Find("Maze Geom");
+        GameObject container = GameObject.Find("Maze Geometry");
         f1.transform.SetParent(container.transform, true);
 
         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);

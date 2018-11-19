@@ -62,7 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\CharController.cs" />
-    <Compile Include="Assets\GateAndKey.cs" />
     <Compile Include="Assets\Graph.cs" />
     <Compile Include="Assets\Main.cs" />
     <Compile Include="Assets\Maze.cs" />

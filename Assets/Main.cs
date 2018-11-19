@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Main : MonoBehaviour
 {
@@ -14,6 +16,8 @@ public class Main : MonoBehaviour
     Camera cam; 
     Graph g;
     Vector3 goalPos;
+
+    //public Button mybutton; // todo: buttons y'all.  
 
     // TO SEND TO CHARCONTROLLER
     Vector3 keyPos;
@@ -35,58 +39,88 @@ public class Main : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        // todo : load menu scene to start 
+        //SceneManager.LoadScene("Menu"); 
+    }
+
+    // todo: call in "generatethelevel" function ? 
+    public void ChangeToScene(string sceneToChangeTo)
+    {
+        SceneManager.LoadScene(sceneToChangeTo);
+
+    }
+
+    public void ChangeToSampleScene()
+    {
+        SceneManager.LoadScene("SampleScene");
+
+    }
+
+    public void ChangeToGameScene() 
+    {
+        SceneManager.LoadScene("Scene2");
+    }
+
+
+    // length, width, numkeys, gate/no gate, "theme"... i guess
+    public void GenerateTheLevelButton() 
+    {
+        // BUTTON STUFF
+        //mybutton = GameObject.Find("mybutton").GetComponent<Button>();
+        //mybutton.onClick.AddListener(TaskOnClick);
+
         // camera reference
         cam = Camera.main;
 
         // Maze Algorithm ///////////////////////////////////
-        Maze m = new Maze(cam, 10,10,1); // leaves camera view ~12x12 
-        goalPos = m.goalPos; 
+        Maze m = new Maze(cam, 10, 10, 1); // leaves camera view ~12x12 
+        goalPos = m.goalPos;
         m.GenerateMaze();
 
-         //display nodes in debug 
+        //display nodes in debug 
         foreach (Node node in m.allNodes)
         {
             //node.StartDebugVis(cam);
 
             // add all the nodes from the maze into main todo: good idea? idk 
             allNodes.Add(node);
-            map.Add(node, false); 
+            map.Add(node, false);
         }
 
-         //create a graph for later use
+        //create a graph for later use
         g = new Graph(m.allNodes); // todo: make it allNodes instead of m.allNodes   
 
         ///////////////////////////////////////////////////
 
 
         // Finding Hard-Coded Node Faces ////////////////////
-        if (pathFaces.Length == 0) 
+        if (pathFaces.Length == 0)
         {
-            pathFaces = GameObject.FindGameObjectsWithTag("PathFace"); 
+            pathFaces = GameObject.FindGameObjectsWithTag("PathFace");
         }
 
         for (int i = 0; i < pathFaces.Length; i++)
         {
             GameObject face = pathFaces[i];
             Vector3 normal = Vector3.Normalize(face.transform.up); // is this always the correct normal? should be 
-            Node n = new Node(i, "top", face.transform.position, face.transform.up, face.transform.right);  
-            float epsilon = 0.01f; 
+            Node n = new Node(i, "top", face.transform.position, face.transform.up, face.transform.right);
+            float epsilon = 0.01f;
 
-            if (normal == new Vector3(0, 1, 0)) 
+            if (normal == new Vector3(0, 1, 0))
             {
                 n = new Node(i, "top", face.transform.position, face.transform.up, face.transform.right);
             }
-            else if (normal == new Vector3(-1, 0, 0)) 
+            else if (normal == new Vector3(-1, 0, 0))
             {
                 n = new Node(i, "negx", face.transform.position, face.transform.up, face.transform.right);
             }
-            else if (normal == new Vector3(0, 0, -1)) 
+            else if (normal == new Vector3(0, 0, -1))
             {
                 n = new Node(i, "negz", face.transform.position, face.transform.up, face.transform.right);
             }
             else if (normal.x > epsilon || normal.x < -epsilon)
             {
-                if (normal.y > 0) 
+                if (normal.y > 0)
                 {
                     n = new Node(i, "diagx", face.transform.position, face.transform.up, face.transform.right);
                 }
@@ -109,25 +143,25 @@ public class Main : MonoBehaviour
             //node.FindGeomNeighbors(allNodes, cam);
             //node.FindIllusionNeighbors(allNodes, cam);
 
-
             //node.StartDebugVis(cam);
         }
-
 
         // referencing the character variable todo idk if this should be here ? 
         thePlayer = GameObject.Find("Character");
         playerScript = thePlayer.GetComponent<CharController>();
         playerScript.AssignFirstCurrNode(allNodes);
-        // TestingFunction(); 
         ///////////////////////////////////////////////////
 
         MakeGatePlusKey(); // this needs to go first to lay down the gate 
-        MakePrizes(10);
+        MakePrizes(10); // todo: make some limits on dis (i.e. what is the max prizes, also same concern for ladders) 
 
         // todo: do something here - send the buttonPos to charController 
         playerScript.keyPos = keyPos;
         if (gateObjX) playerScript.gate1 = gateObjX;
-        if (gateObjZ) playerScript.gate2 = gateObjZ; 
+        if (gateObjZ) playerScript.gate2 = gateObjZ;
+
+        // todo: CHANGE SCENES 
+        //ChangeToSampleScene();
     }
 
     // Update is called once per frame
@@ -136,21 +170,28 @@ public class Main : MonoBehaviour
         // Used for Character Movement   // todo: distinguish between mouse click ? i guass 
         if (Input.GetMouseButtonDown(0)) // when mouseclick is released (once per click)
         {
-            playerScript.SetTargetPosition(allNodes);
+            if (playerScript)
+            {
+                playerScript.SetTargetPosition(allNodes);
 
-            // CALL PATHFINDING 
-            List<Node> path = g.AStar(playerScript.currNode, playerScript.targetNode);
+                // CALL PATHFINDING 
+                //if (playerScript.currNode != null && playerScript.targetNode != null) 
+                //{
+                List<Node> path = g.AStar(playerScript.currNode, playerScript.targetNode);
 
-            // USE THAT TO DIRECT THE PATH OF THE CHARACTER
-            playerScript.WalkAlongPath(path); 
-            //StartCoroutine(playerScript.WalkAlongPath2(path));
+                // USE THAT TO DIRECT THE PATH OF THE CHARACTER
+                playerScript.WalkAlongPath(path);
+                //StartCoroutine(playerScript.WalkAlongPath2(path));
+                //}
+            }
+
         }
     }
 
     bool MakeGatePlusKey()
     {
-        //todo: how to notify that they have been collided on? 
-        // how to prevent the cube from standing on the gate? 
+        GameObject gateGeom = new GameObject();
+        gateGeom.name = "Gate and Key";
 
         Color buttonCol = new Color(36 / 255f, 56 / 255f, 36 / 255f);
 
@@ -179,8 +220,10 @@ public class Main : MonoBehaviour
             gateObjX.transform.localScale = new Vector3(0.1f, 1f, 0.9f);
             Renderer r1 = gateObjX.GetComponent<Renderer>();
             r1.material.SetColor("_Color", buttonCol);
-            //gateObjX.AddComponent<GateAndKey>();
             gateObjX.tag = "Gate";
+            gateObjX.name = "Gate X"; 
+            gateObjX.transform.SetParent(gateGeom.transform, true);
+
 
             gateObjX.AddComponent<Rigidbody>();
             gateObjX.GetComponent<Rigidbody>().useGravity = false;
@@ -194,8 +237,9 @@ public class Main : MonoBehaviour
             gateObjZ.transform.localScale = new Vector3(0.9f, 1f, 0.1f);
             Renderer r1 = gateObjZ.GetComponent<Renderer>();
             r1.material.SetColor("_Color", buttonCol);
-            //gateObjZ.AddComponent<GateAndKey>();
             gateObjZ.tag = "Gate";
+            gateObjZ.name = "Gate Z";
+            gateObjZ.transform.SetParent(gateGeom.transform, true);
 
             gateObjZ.AddComponent<Rigidbody>();
             gateObjZ.GetComponent<Rigidbody>().useGravity = false;
@@ -220,7 +264,10 @@ public class Main : MonoBehaviour
         gateButton.transform.localEulerAngles = new Vector3(0, 45, 0);
         Renderer r2 = gateButton.GetComponent<Renderer>();
         r2.material.SetColor("_Color", buttonCol);
-        //gateButton.AddComponent<GateAndKey>();
+
+        gateButton.name = "Key";
+        gateButton.transform.SetParent(gateGeom.transform, true);
+
         gateButton.tag = "Key"; 
         gateButton.AddComponent<Rigidbody>();
         gateButton.GetComponent<Rigidbody>().useGravity = false;
@@ -233,6 +280,9 @@ public class Main : MonoBehaviour
 
     bool MakePrizes(int numPrizes)
     {
+        GameObject prizeGeom = new GameObject();
+        prizeGeom.name = "Prizes";
+
         if (allNodes.Count < 1)
         {
             Debug.Log("allNodes is empty, cannot make prizes");
@@ -248,8 +298,10 @@ public class Main : MonoBehaviour
         r.material.SetColor("_Color", prizeCol);
         finalPrize.AddComponent<Spin>();
         finalPrize.tag = "FinalPrize";
+        finalPrize.name = "Final Prize"; 
         finalPrize.AddComponent<Rigidbody>();
-        finalPrize.GetComponent<Rigidbody>().useGravity = false; 
+        finalPrize.GetComponent<Rigidbody>().useGravity = false;
+        finalPrize.transform.SetParent(prizeGeom.transform, true);
 
         // little prizes 
         List<Node> mixedList = RandomizeList(allNodes);
@@ -266,6 +318,7 @@ public class Main : MonoBehaviour
                     if (!node.position.Equals(new Vector3(0,0,0)) && !node.position.Equals(goalPos))
                     {
                         GameObject babyPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        babyPrize.name = "Prize"; 
                         babyPrize.transform.position = node.position + node.up * 0.3f;
                         babyPrize.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
                         babyPrize.transform.localEulerAngles = new Vector3(45, 0, 45);
@@ -275,6 +328,7 @@ public class Main : MonoBehaviour
                         babyPrize.tag = "Prize";
                         babyPrize.AddComponent<Rigidbody>();
                         babyPrize.GetComponent<Rigidbody>().useGravity = false;
+                        babyPrize.transform.SetParent(prizeGeom.transform, true);
 
                         count++;
                         map[node] = true;
