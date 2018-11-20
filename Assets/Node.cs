@@ -14,7 +14,9 @@ public class Node
 
     public float hCost = 0; // todo: assign later 
     public float gCost = 1; // todo: assign later
-    public Node comesFrom = null; 
+    public Node comesFrom = null;
+
+    public GameObject geom; 
 
     // constructors
     public Node()
@@ -278,6 +280,8 @@ public class Node
         Renderer rend = visPos.GetComponent<Renderer>();
         rend.material = new Material(Shader.Find("Specular"));
         rend.material.SetColor("_Color", Color.blue);
+
+        geom = visPos; 
 
         // todo: take this out later? don't know if it's necessary 
         System.Type mType = System.Type.GetType("NodeInfoVis");

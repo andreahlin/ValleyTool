@@ -11,11 +11,11 @@ public class Main : MonoBehaviour
     // keeps track of whether something is on the node already 
     public Dictionary<Node, bool> map = new Dictionary<Node, bool>();
     public List<Node> nodesHadLittlePrizes = new List<Node>();
-    public Node nodeKeyWasOn = null; 
+    public Node nodeKeyWasOn = null;
 
     GameObject thePlayer;
     CharController playerScript;
-    Camera cam; 
+    Camera cam;
     Graph g;
     Vector3 goalPos;
 
@@ -24,26 +24,33 @@ public class Main : MonoBehaviour
     GameObject gateObjX;
     GameObject gateObjZ;
 
-    // things the user should be able to input
-
-    public bool debugMode = true; // todo: not using right now
-
     // Use this for initialization
     void Start()
     {
-        // todo : load menu scene to start 
-        //SceneManager.LoadScene("Menu"); 
+        // visibility of the "playing" is not there 
+        TogglePanelVisibility("playing panel"); 
     }
 
-    //////////////////////////// buttons ///////////////////////////////////
-    //public static int mazeLength = 5;
-    //public static int mazeWidth = 5;
-    //public static int numPrizes = 1;
-    //public static int prizeScore = 1;
-    //public static int numLadders = 0;
-    //public static bool hasGates = false;
-    //public static int characterChoice;
-    //public static int themeChoice;
+    public void TogglePanelVisibility(string panelName)
+    {
+        GameObject playPanel = GameObject.Find(panelName);
+        if (playPanel)
+        {
+            // disable all components 
+            MonoBehaviour[] comps = playPanel.GetComponents<MonoBehaviour>();
+            foreach (MonoBehaviour c in comps)
+            {
+                c.enabled = !c.enabled;
+            }
+            // deactivate all children  
+            for (int i = 0; i < playPanel.transform.childCount; i++)
+            {
+                var child = playPanel.transform.GetChild(i).gameObject;
+                if (child != null)
+                    child.SetActive(!child.activeSelf);
+            }
+        }
+    }
 
     public void UpdateWidthButton(float i)
     {
@@ -97,28 +104,85 @@ public class Main : MonoBehaviour
             Destroy(keyGeom.gameObject); 
         }
 
-        // create prizes + key 
-
-        //var i = Random.Range(0, allNodes.Count);
-        //Node n = allNodes[i];
-        //while (!(!n.position.Equals(new Vector3(0, 0, 0)) && !n.position.Equals(goalPos) && map[n] == false
-        //                    && n.up.Equals(new Vector3(0, 1, 0))))
-        //{
-        //    i = Random.Range(0, allNodes.Count);
-        //    n = allNodes[i];
-        //}
-        //nodeKeyWasOn = n;
-        //keyPos = n.position;
-        //// make the key 
         MakeKey(); 
 
         // make more prizes 
         MakePrizes(Control.numPrizes);
     }
 
-    public void CreateNewLevel()
+    public void EraseLevel()
     {
-        // 
+        // clear geometry in: "Maze Geom", "Gate and Key", "Prizes", "Ladder Geometry" 
+        GameObject geometry = GameObject.Find("Maze Geometry");
+        if (geometry != null)
+        {
+            foreach (Transform child in geometry.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        geometry = GameObject.Find("Ladder Geometry");
+        if (geometry != null)
+        {
+            foreach (Transform child in geometry.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        geometry = GameObject.Find("Prizes");
+        if (geometry != null)
+        {
+            foreach (Transform child in geometry.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        geometry = GameObject.Find("Gate and Key");
+        if (geometry != null)
+        {
+            foreach (Transform child in geometry.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        // reset variables: allNodes, map, nodeshadlittleprizes, nodekeywason, goalpos, keypos, gateobjx, gateobjz
+        allNodes.Clear();
+        map.Clear();
+        nodesHadLittlePrizes.Clear();
+        nodeKeyWasOn = null;
+        goalPos = new Vector3(0, 0, 0);
+        keyPos = new Vector3(0, 0, 0);
+        gateObjX = null;
+        gateObjZ = null;
+        thePlayer.transform.position = new Vector3(0, thePlayer.transform.localScale.y * 0.5f, 0);
+
+        // enable start menu visualization 
+        TogglePanelVisibility("start panel");
+        TogglePanelVisibility("playing panel");
+    }
+
+    public void toggleDebugMode()
+    {
+        //if (allNodes.Count > 0)
+        //{
+        //    if (GameObject.Find("DebugGeom").chil) 
+        //    {
+
+        //    }
+        //}
+    }
+
+    // todo: use this somewhere i guess 
+    public void EraseDebugObjects() 
+    {
+        foreach (Node n in allNodes) 
+        {
+            Destroy(n.geom.gameObject);  
+        }
     }
 
 
@@ -144,16 +208,10 @@ public class Main : MonoBehaviour
     // length, width, numkeys, gate/no gate, "theme"... i guess
     public void GenerateTheLevelButton() 
     {
-        // BUTTON STUFF
-        //mybutton = GameObject.Find("mybutton").GetComponent<Button>();
-        //mybutton.onClick.AddListener(TaskOnClick);
-
         // camera reference
         cam = Camera.main;
 
         // Maze Algorithm ///////////////////////////////////
-        //Maze m = new Maze(cam,5, 5, 1); // leaves camera view ~12x12 
-        Debug.Log("(width, length): (" + Control.mazeWidth + ", " + Control.mazeLength + ")"); 
         Maze m = new Maze(cam, Control.mazeWidth, Control.mazeLength, 1); 
         goalPos = m.goalPos;
         m.GenerateMaze();
@@ -245,6 +303,11 @@ public class Main : MonoBehaviour
         ///////////////////////////////////////////////////
         if (Control.hasGates) MakeGatePlusKey(); // this needs to go first to lay down the gate 
         MakePrizes(Control.numPrizes); // todo: make some limits on dis (i.e. what is the max prizes, also same concern for ladders) 
+
+        // show the play panel and hide the other panel 
+        TogglePanelVisibility("start panel");
+        TogglePanelVisibility("playing panel");
+
     }
     ////////////////////////////////////////////////////////////////////////////////////
 
@@ -268,8 +331,12 @@ public class Main : MonoBehaviour
 
     bool MakeGatePlusKey()
     {
-        GameObject gateGeom = new GameObject();
-        gateGeom.name = "Gate and Key";
+        GameObject gateGeom = GameObject.Find("Gate and Key"); 
+        if (gateGeom == null) 
+        {
+            gateGeom = new GameObject();
+            gateGeom.name = "Gate and Key";
+        }
 
         Color buttonCol = new Color(36 / 255f, 56 / 255f, 36 / 255f);
 
@@ -360,7 +427,12 @@ public class Main : MonoBehaviour
 
     public bool MakeKey()
     {
-        GameObject gateGeom = GameObject.Find("Gate and Key"); 
+        GameObject gateGeom = GameObject.Find("Gate and Key");
+        if (gateGeom == null)
+        {
+            gateGeom = new GameObject();
+            gateGeom.name = "Gate and Key";
+        }
 
         Color buttonCol = new Color(36 / 255f, 56 / 255f, 36 / 255f);
 

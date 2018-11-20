@@ -157,8 +157,12 @@ public class Maze {
 
     private void CreateSomeLadders(int numLadders)
     {
-        GameObject ladderGeom = new GameObject();
-        ladderGeom.name = "Ladder Geometry";
+        GameObject ladderGeom = GameObject.Find("Ladder Geometry");
+        if (ladderGeom == null)
+        {
+            ladderGeom = new GameObject();
+            ladderGeom.name = "Ladder Geometry";
+        }
 
         int maxXLadders = numLadders / 2;
         int maxZLadders = numLadders - maxXLadders;
@@ -173,7 +177,13 @@ public class Maze {
             {
                 for (int z = 0; z < spaceGrid.GetLength(2); z++)
                 {
-                    indicesList.Add(new Vector3(x, y, z)); 
+                    // make sure it's not the goalNode 
+                    if (!(x == spaceGrid.GetLength(0) - 1 && 
+                          y == spaceGrid.GetLength(1) - 1 && 
+                          z == spaceGrid.GetLength(2) - 1))
+                    {
+                        indicesList.Add(new Vector3(x, y, z));
+                    }
                 }
             }
         }
@@ -251,7 +261,7 @@ public class Maze {
                                         GameObject ladder = (GameObject)GameObject.Instantiate(Resources.Load("blackladder"));
                                         ladder.transform.position = worldLadderX + new Vector3(0.5f, 0, 0);
                                         ladder.transform.SetParent(ladderGeom.transform, true);
-                                        ladder.name = "x Ladder"; 
+                                        ladder.name = "x Ladder";
                                         //ladder.name = "Ladder"; 
 
                                         //make a node there 
@@ -263,6 +273,7 @@ public class Maze {
                                     }
                                 }
                             }
+
                         }
                     }
                 }
@@ -343,6 +354,7 @@ public class Maze {
                                 }
                             }
                         }
+
                     }
                 }
             }
@@ -351,13 +363,16 @@ public class Maze {
         // at the end, add all ladderXnodes and ladderZnodes to the allNodes so they are rendered 
         foreach (Node n in ladderXNodes) allNodes.Add(n);
         foreach (Node n in ladderZNodes) allNodes.Add(n);
-
     }
 
     private void CreateAllLadders() 
     {
-        GameObject ladderGeom = new GameObject();
-        ladderGeom.name = "Ladder Geometry";
+        GameObject ladderGeom = GameObject.Find("Ladder Geometry"); 
+        if (ladderGeom == null) 
+        {
+            ladderGeom = new GameObject();
+            ladderGeom.name = "Ladder Geometry";
+        }
 
         for (int x = 0; x < spaceGrid.GetLength(0); x++) {
             for (int y = 0; y < spaceGrid.GetLength(1); y++) {
