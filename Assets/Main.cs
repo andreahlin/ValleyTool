@@ -27,20 +27,27 @@ public class Main : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        // visibility of the "playing" is not there 
+        // hide "player panel" visibility  
         TogglePanelVisibility("playing panel"); 
     }
 
+    // show/hide panels based on previous state 
     public void TogglePanelVisibility(string panelName)
     {
         GameObject playPanel = GameObject.Find(panelName);
         if (playPanel)
         {
-            // disable all components 
+            // disable all components
+            bool toReset = false; 
             MonoBehaviour[] comps = playPanel.GetComponents<MonoBehaviour>();
             foreach (MonoBehaviour c in comps)
             {
                 c.enabled = !c.enabled;
+                // check if the start panel needs to be reset 
+                if (panelName.Equals("start panel"))
+                {
+                    if (c.enabled) toReset = true;
+                }
             }
             // deactivate all children  
             for (int i = 0; i < playPanel.transform.childCount; i++)
@@ -49,19 +56,43 @@ public class Main : MonoBehaviour
                 if (child != null)
                     child.SetActive(!child.activeSelf);
             }
+            if (toReset)
+            {
+                ResetStartPanelValues();
+            }
         }
     }
 
+    // manually resets all designer inputs to default value
+    public void ResetStartPanelValues()
+    {
+        Slider mySlider = GameObject.Find("length-slider").GetComponent<Slider>();
+        mySlider.value = Control.mazeLengthDefault;
+        mySlider = GameObject.Find("width-slider").GetComponent<Slider>();
+        mySlider.value = Control.mazeWidthDefault;
+
+        Control.numPrizes = Control.numPrizesDefault;
+        Control.prizeScore = Control.prizeScoreDefault;
+        Control.numLadders = Control.numLaddersDefault;
+        Control.hasGates = Control.hasGateDefault;
+        Control.characterChoice = Control.characterChoiceDefault;
+        Control.themeChoice = Control.themeChoiceDefault;
+        Control.jams = Control.jamsDefault; 
+    }
+
+    // connected to width slider 
     public void UpdateWidthButton(float i)
     {
         Control.mazeWidth = (int)i; 
     }
 
+    // connected to length slider 
     public void UpdateLengthButton(float i)
     {
         Control.mazeLength = (int)i;
     }
 
+    // restart level without changing maze or ladder disribution 
     public void RestartSameLevel() 
     {
         // put char back at (0,0,0)
@@ -110,6 +141,7 @@ public class Main : MonoBehaviour
         MakePrizes(Control.numPrizes);
     }
 
+    // erase the level completely 
     public void EraseLevel()
     {
         // clear geometry in: "Maze Geom", "Gate and Key", "Prizes", "Ladder Geometry" 
@@ -165,6 +197,7 @@ public class Main : MonoBehaviour
         TogglePanelVisibility("playing panel");
     }
 
+    // todo 
     public void toggleDebugMode()
     {
         //if (allNodes.Count > 0)
@@ -187,6 +220,7 @@ public class Main : MonoBehaviour
 
 
     // todo: call in "generatethelevel" function ? 
+    // todo: maybe won't use multiple scenes 
     public void ChangeToScene(string sceneToChangeTo)
     {
         SceneManager.LoadScene(sceneToChangeTo);
@@ -397,36 +431,13 @@ public class Main : MonoBehaviour
         if (gateObjZ) playerScript.gate2 = gateObjZ;
 
         MakeKey(); 
-        // place the button at random node 
-        //var i = Random.Range(0, allNodes.Count);
-        //Node n = allNodes[i];
-        //while (!(!n.position.Equals(new Vector3(0, 0, 0)) && !n.position.Equals(goalPos) && map[n] == false
-        //                    && n.up.Equals(new Vector3(0, 1, 0))))
-        //{
-        //    i = Random.Range(0, allNodes.Count);
-        //    n = allNodes[i];
-        //}
-        //nodeKeyWasOn = n; 
-        //keyPos = n.position; 
-        //GameObject gateButton = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        //gateButton.transform.position = n.position + new Vector3(0,0.05f,0);
-        //gateButton.transform.localScale = new Vector3(0.3f, 0.1f, 0.3f);
-        //gateButton.transform.localEulerAngles = new Vector3(0, 45, 0);
-        //Renderer r2 = gateButton.GetComponent<Renderer>();
-        //r2.material.SetColor("_Color", buttonCol);
-        //gateButton.transform.SetParent(gateGeom.transform, true);
-        //gateButton.tag = "Key";
-        //gateButton.name = "Key";
-        //gateButton.AddComponent<Rigidbody>();
-        //gateButton.GetComponent<Rigidbody>().useGravity = false;
-        //gateButton.GetComponent<Rigidbody>().isKinematic = true;
-        //map[n] = true;
-
         return true; 
     }
 
     public bool MakeKey()
     {
+        // todo: do some pathfinding to make sure that you can find the key!!  IDK MAN 
+
         GameObject gateGeom = GameObject.Find("Gate and Key");
         if (gateGeom == null)
         {
@@ -436,14 +447,108 @@ public class Main : MonoBehaviour
 
         Color buttonCol = new Color(36 / 255f, 56 / 255f, 36 / 255f);
 
+        List<Node> nodesToRestoreNeighs = new List<Node>(); 
+
+        // make a temp graph to check if the button can be reached 
+        List<Node> nodesWithoutGoalNode = new List<Node>();
+        Node startNode = null; 
+        foreach (Node curr in allNodes)
+        {
+            bool keepOut = false; 
+            Vector3 displaceY = new Vector3(0, -.5f, 0); 
+            if (gateObjX) 
+            {
+                if (Vector3.Distance(curr.position, gateObjX.transform.position + displaceY) < 0.01f)
+                {
+                    keepOut = true;
+                    foreach (Node neigh in curr.neighList)
+                    {
+                        if (!nodesToRestoreNeighs.Contains(curr)) nodesToRestoreNeighs.Add(curr);
+                        neigh.neighList.Remove(curr);
+                    }
+                }
+            }
+            if (gateObjZ)
+            {
+                if (Vector3.Distance(curr.position, gateObjZ.transform.position + displaceY) < 0.01f)
+                {
+                    keepOut = true;
+                    foreach (Node neigh in curr.neighList)
+                    {
+                        if (!nodesToRestoreNeighs.Contains(curr)) nodesToRestoreNeighs.Add(curr);
+                        neigh.neighList.Remove(curr);
+                    }
+                }
+            }
+            if (Vector3.Distance(curr.position, goalPos) < 0.01f)
+            {
+                keepOut = true;
+                foreach (Node neigh in curr.neighList)
+                {
+                    if (!nodesToRestoreNeighs.Contains(curr)) nodesToRestoreNeighs.Add(curr);
+                    neigh.neighList.Remove(curr);
+                }
+            }
+            if (Vector3.Distance(curr.position, new Vector3(0,0,0)) < 0.01f)
+            {
+                startNode = curr;
+            }
+            if (!keepOut)
+            {
+                nodesWithoutGoalNode.Add(curr);
+            }
+            else 
+            {
+                // remove it from neighbors todo: this is affecting the actual nodes: put back later?? 
+                //foreach (Node neigh in curr.neighList)
+                //{
+                //    //Node dummy = new Node(neigh.id, neigh.face, neigh.position, neigh.up, neigh.right);
+                //    //foreach (Node ugh in neigh.neighList)
+                //    //{
+                //    //    if (!ugh.Equals(curr)) dummy.neighList.Add(ugh); 
+                //    //}
+
+                //    //// replace real node with dummy in the list 
+                //    //nodesWithoutGoalNode.Remove(neigh);
+                //    //nodesWithoutGoalNode.Add(dummy);  // i am defeated 
+
+                //    // todo: find a different way :c 
+                //    if (!nodesToRestoreNeighs.Contains(curr)) nodesToRestoreNeighs.Add(curr); 
+                //    neigh.neighList.Remove(curr);
+                //}
+
+            }
+        }
+
+        // make a new graph - returning the right count 
+        //Debug.Log("allNode Count: " + allNodes.Count);
+        //Debug.Log("Otherwa Count: " + nodesWithoutGoalNode.Count); 
+
+        Graph tempGraph = new Graph(nodesWithoutGoalNode);
+
         // place the button at random node 
         var i = Random.Range(0, allNodes.Count);
-        Node n = allNodes[i];
+         Node n = allNodes[i];
+        //var i = Random.Range(0, nodesWithoutGoalNode.Count);
+        //Node n = nodesWithoutGoalNode[i];
+
+        bool inSameComponent = tempGraph.InSameComponent(startNode, n);
+        List<Node> path = tempGraph.AStar(startNode, n);
+
+        //Debug.Log("length of path: " + path.Count);
+        foreach (Node p in path) 
+        {
+            Debug.Log(p.position); 
+        }
+        //Debug.Log("result of inSameComponent: " + inSameComponent); // todo: WHY ISN'T THIS WORKING 
+        //todo: have to go about removing it from its neighbors )))): AHHHGHGHGH 
+
         while (!(!n.position.Equals(new Vector3(0, 0, 0)) && !n.position.Equals(goalPos) && map[n] == false
-                            && n.up.Equals(new Vector3(0, 1, 0))))
+                 && n.up.Equals(new Vector3(0, 1, 0)) && inSameComponent))
         {
             i = Random.Range(0, allNodes.Count);
             n = allNodes[i];
+            inSameComponent = tempGraph.InSameComponent(startNode, n);
         }
         nodeKeyWasOn = n;
         keyPos = n.position;
@@ -463,6 +568,17 @@ public class Main : MonoBehaviour
 
         // send to char controller 
         playerScript.keyPos = keyPos;
+
+        // restore the neighbors
+        Debug.Log("num in restorelist: " + nodesToRestoreNeighs.Count); 
+        foreach (Node node in nodesToRestoreNeighs)
+        {
+            foreach (Node neigh in node.neighList)
+            {
+                neigh.neighList.Add(node);
+            }
+        }
+
         return true;
     }
 

@@ -9,18 +9,18 @@ public class Control : MonoBehaviour {
     public static int mazeWidth = 2;
     public static int numPrizes = 10;
     public static int prizeScore = 1;
-    public static int numLadders = 40;
+    public static int numLadders = 5;
     public static bool hasGates = true;
     public static int characterChoice;
     public static int themeChoice;
-    public  int jams; // ? 
+    public static int jams; // ? 
 
     // default used for resetting game 
     public const int mazeLengthDefault = 2;
     public const int mazeWidthDefault = 2;
     public const int numPrizesDefault = 10;
     public const int prizeScoreDefault = 1;
-    public const int numLaddersDefault = 40;
+    public const int numLaddersDefault = 1;
     public const bool hasGateDefault = true;
     public const int characterChoiceDefault = 0;
     public const int themeChoiceDefault = 0;
