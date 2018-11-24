@@ -29,6 +29,8 @@ public class Main : MonoBehaviour
     {
         // hide "player panel" visibility  
         TogglePanelVisibility("playing panel"); 
+
+        // making a color picker 
     }
 
     // show/hide panels based on previous state 
@@ -66,10 +68,20 @@ public class Main : MonoBehaviour
     // manually resets all designer inputs to default value
     public void ResetStartPanelValues()
     {
-        Slider mySlider = GameObject.Find("length-slider").GetComponent<Slider>();
-        mySlider.value = Control.mazeLengthDefault;
-        mySlider = GameObject.Find("width-slider").GetComponent<Slider>();
+        Slider myLengthSlider = GameObject.Find("length-slider").GetComponent<Slider>();
+        myLengthSlider.value = Control.mazeLengthDefault;
+        Slider mySlider = GameObject.Find("width-slider").GetComponent<Slider>();
         mySlider.value = Control.mazeWidthDefault;
+        mySlider = GameObject.Find("ladder-slider").GetComponent<Slider>();
+        mySlider.value = Control.numLaddersDefault;
+        mySlider = GameObject.Find("prize-slider").GetComponent<Slider>();
+        mySlider.value = Control.numPrizesDefault;
+        Toggle myToggle = GameObject.Find("obstacle-toggle").GetComponent<Toggle>();
+        myToggle.isOn = false;
+        InputField myInput = GameObject.Find("prizevalue-input").GetComponent<InputField>();
+        myInput.Select();
+        myInput.text = "";
+        myLengthSlider.Select();
 
         Control.numPrizes = Control.numPrizesDefault;
         Control.prizeScore = Control.prizeScoreDefault;
@@ -92,9 +104,46 @@ public class Main : MonoBehaviour
         Control.mazeLength = (int)i;
     }
 
+    // connected to ladder slider 
+    public void UpdateLadderButton(float i)
+    {
+        Control.numLadders = (int)i;
+    }
+
+    // connect to prize slider 
+    public void UpdatePrizeButton(float i)
+    {
+        // (todo: slider best option ? how to resize based on the size of the maze?)
+        // set the slider max based on the length/width of the maze, maybe
+        Control.numPrizes = (int)i;
+    }
+
+    // connected to gate toggle 
+    public void UpdateGateButton(bool b)
+    {
+        Control.hasGates = b; 
+    }
+
+    public void UpdatePrizeValueButton(string s)
+    {
+        //Text scoreBoard = GameObject.Find("score").GetComponent<Text>();
+        //string scoreBoardString = scoreBoard.text;
+        int result;
+        bool tryIt = int.TryParse(s, out result);
+        if (tryIt) 
+        {
+            //Debug.Log("changed"); 
+            Control.prizeScore = result;
+        }
+
+    }
+
+
     // restart level without changing maze or ladder disribution 
     public void RestartSameLevel() 
     {
+        Control.isGameOver = false;
+
         // put char back at (0,0,0)
         thePlayer.transform.position = new Vector3(0, thePlayer.transform.localScale.y * 0.5f, 0); 
 
@@ -127,23 +176,46 @@ public class Main : MonoBehaviour
             }
         }
 
+        // destroy & recreate key  
         GameObject keyGeom = GameObject.Find("Key"); 
         if (keyGeom != null)
         {
             map[nodeKeyWasOn] = false;
             nodeKeyWasOn = null;
-            Destroy(keyGeom.gameObject); 
-        }
+            Destroy(keyGeom.gameObject);
 
-        MakeKey(); 
+            MakeKey();
+        }
 
         // make more prizes 
         MakePrizes(Control.numPrizes);
+
+        // restore the gui 
+        GameObject gameOver = GameObject.Find("game over notice");
+        Text text = gameOver.GetComponent<Text>();
+        text.text = "";
+        gameOver = GameObject.Find("score");
+        text = gameOver.GetComponent<Text>();
+        text.text = "0";
+
+        // restart the first node char is on 
+        thePlayer = GameObject.Find("Character");
+        playerScript = thePlayer.GetComponent<CharController>();
+        playerScript.AssignFirstCurrNode(allNodes);
     }
 
     // erase the level completely 
     public void EraseLevel()
     {
+        // restore the gui 
+        GameObject gameOver = GameObject.Find("game over notice");
+        Text text = gameOver.GetComponent<Text>();
+        text.text = "";
+
+        gameOver = GameObject.Find("score");
+        text = gameOver.GetComponent<Text>();
+        text.text = "0";
+
         // clear geometry in: "Maze Geom", "Gate and Key", "Prizes", "Ladder Geometry" 
         GameObject geometry = GameObject.Find("Maze Geometry");
         if (geometry != null)
@@ -214,7 +286,7 @@ public class Main : MonoBehaviour
     {
         foreach (Node n in allNodes) 
         {
-            Destroy(n.geom.gameObject);  
+            Destroy(n.geom.gameObject); // todo never tested 
         }
     }
 
@@ -242,6 +314,8 @@ public class Main : MonoBehaviour
     // length, width, numkeys, gate/no gate, "theme"... i guess
     public void GenerateTheLevelButton() 
     {
+        Control.isGameOver = false;
+
         // camera reference
         cam = Camera.main;
 
@@ -355,9 +429,13 @@ public class Main : MonoBehaviour
             if (playerScript)
             {
                 playerScript.SetTargetPosition(allNodes);
-                List<Node> path = g.AStar(playerScript.currNode, playerScript.targetNode);
-                // USE THAT TO DIRECT THE PATH OF THE CHARACTER
-                playerScript.WalkAlongPath(path);
+                if (playerScript.currNode != null && playerScript.targetNode != null) 
+                {
+                    List<Node> path = g.AStar(playerScript.currNode, playerScript.targetNode);
+                    // USE THAT TO DIRECT THE PATH OF THE CHARACTER
+                    playerScript.WalkAlongPath(path);
+
+                }
             }
 
         }
@@ -398,7 +476,7 @@ public class Main : MonoBehaviour
             gateObjX.transform.position = goalPos + new Vector3(-1, 0.5f, 0);
             gateObjX.transform.localScale = new Vector3(0.1f, 1f, 0.9f);
             Renderer r1 = gateObjX.GetComponent<Renderer>();
-            r1.material.SetColor("_Color", buttonCol);
+            r1.material.SetColor("_Color", Control.gateColor);
             gateObjX.tag = "Gate";
             gateObjX.name = "Gate X"; 
             gateObjX.transform.SetParent(gateGeom.transform, true);
@@ -415,7 +493,7 @@ public class Main : MonoBehaviour
             gateObjZ.transform.position = goalPos + new Vector3(0, 0.5f, -1);
             gateObjZ.transform.localScale = new Vector3(0.9f, 1f, 0.1f);
             Renderer r1 = gateObjZ.GetComponent<Renderer>();
-            r1.material.SetColor("_Color", buttonCol);
+            r1.material.SetColor("_Color", Control.gateColor);
             gateObjZ.tag = "Gate";
             gateObjZ.name = "Gate Z";
             gateObjZ.transform.SetParent(gateGeom.transform, true);
@@ -497,51 +575,15 @@ public class Main : MonoBehaviour
             {
                 nodesWithoutGoalNode.Add(curr);
             }
-            else 
-            {
-                // remove it from neighbors todo: this is affecting the actual nodes: put back later?? 
-                //foreach (Node neigh in curr.neighList)
-                //{
-                //    //Node dummy = new Node(neigh.id, neigh.face, neigh.position, neigh.up, neigh.right);
-                //    //foreach (Node ugh in neigh.neighList)
-                //    //{
-                //    //    if (!ugh.Equals(curr)) dummy.neighList.Add(ugh); 
-                //    //}
-
-                //    //// replace real node with dummy in the list 
-                //    //nodesWithoutGoalNode.Remove(neigh);
-                //    //nodesWithoutGoalNode.Add(dummy);  // i am defeated 
-
-                //    // todo: find a different way :c 
-                //    if (!nodesToRestoreNeighs.Contains(curr)) nodesToRestoreNeighs.Add(curr); 
-                //    neigh.neighList.Remove(curr);
-                //}
-
-            }
         }
-
-        // make a new graph - returning the right count 
-        //Debug.Log("allNode Count: " + allNodes.Count);
-        //Debug.Log("Otherwa Count: " + nodesWithoutGoalNode.Count); 
 
         Graph tempGraph = new Graph(nodesWithoutGoalNode);
 
         // place the button at random node 
         var i = Random.Range(0, allNodes.Count);
          Node n = allNodes[i];
-        //var i = Random.Range(0, nodesWithoutGoalNode.Count);
-        //Node n = nodesWithoutGoalNode[i];
 
         bool inSameComponent = tempGraph.InSameComponent(startNode, n);
-        List<Node> path = tempGraph.AStar(startNode, n);
-
-        //Debug.Log("length of path: " + path.Count);
-        foreach (Node p in path) 
-        {
-            Debug.Log(p.position); 
-        }
-        //Debug.Log("result of inSameComponent: " + inSameComponent); // todo: WHY ISN'T THIS WORKING 
-        //todo: have to go about removing it from its neighbors )))): AHHHGHGHGH 
 
         while (!(!n.position.Equals(new Vector3(0, 0, 0)) && !n.position.Equals(goalPos) && map[n] == false
                  && n.up.Equals(new Vector3(0, 1, 0)) && inSameComponent))
@@ -557,7 +599,7 @@ public class Main : MonoBehaviour
         gateButton.transform.localScale = new Vector3(0.3f, 0.1f, 0.3f);
         gateButton.transform.localEulerAngles = new Vector3(0, 45, 0);
         Renderer r2 = gateButton.GetComponent<Renderer>();
-        r2.material.SetColor("_Color", buttonCol);
+        r2.material.SetColor("_Color", Control.gateColor);
         gateButton.transform.SetParent(gateGeom.transform, true);
         gateButton.tag = "Key";
         gateButton.name = "Key";
@@ -570,7 +612,6 @@ public class Main : MonoBehaviour
         playerScript.keyPos = keyPos;
 
         // restore the neighbors
-        Debug.Log("num in restorelist: " + nodesToRestoreNeighs.Count); 
         foreach (Node node in nodesToRestoreNeighs)
         {
             foreach (Node neigh in node.neighList)
@@ -606,7 +647,7 @@ public class Main : MonoBehaviour
         finalPrize.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         finalPrize.transform.localEulerAngles = new Vector3(45, 0, 45);
         Renderer r = finalPrize.GetComponent<Renderer>();
-        r.material.SetColor("_Color", prizeCol);
+        r.material.SetColor("_Color", Control.prizeColor);
         finalPrize.AddComponent<Spin>();
         finalPrize.tag = "FinalPrize";
         finalPrize.name = "Final Prize"; 
@@ -631,13 +672,6 @@ public class Main : MonoBehaviour
             {
                 if (!map[node])
                 {
-                    //bool stillRoom = false; 
-                    //foreach (KeyValuePair<Node, bool> pair in map)
-                    //{
-                    //    if (!pair.Value) stillRoom = true;
-                    //}
-                    //if (!stillRoom) return false;
-
                     if (!node.position.Equals(new Vector3(0,0,0)) && !node.position.Equals(goalPos))
                     {
                         GameObject babyPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -645,7 +679,7 @@ public class Main : MonoBehaviour
                         babyPrize.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
                         babyPrize.transform.localEulerAngles = new Vector3(45, 0, 45);
                         Renderer r1 = babyPrize.GetComponent<Renderer>();
-                        r1.material.SetColor("_Color", prizeCol);
+                        r1.material.SetColor("_Color", Control.prizeColor);
                         babyPrize.AddComponent<Spin>();
                         babyPrize.tag = "Prize";
                         babyPrize.name = "Prize";

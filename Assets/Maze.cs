@@ -774,13 +774,13 @@ public class Maze {
         switch (type)
         {
             case GeomType.Goal:
-                color = new Color(160f / 255, 82f / 255, 65f / 255); 
+                color = Control.pathColor;
                 break;
             case GeomType.Start:
-                color = new Color(141f / 255, 173f / 255, 170f / 255);
+                color = Control.pathColor;
                 break;
             case GeomType.Path:
-                color = new Color(151f / 255, 152f / 255, 59f / 255);
+                color = Control.pathColor;
                 break;
             case GeomType.NonPath:
                 color = new Color(183f / 255, 175f / 255, 168f / 255);
@@ -805,13 +805,13 @@ public class Maze {
         switch (type)
         {
             case GeomType.Goal:
-                color = new Color(160f / 255, 82f / 255, 65f / 255);
+                color = Control.pathColor;
                 break;
             case GeomType.Start:
-                color = new Color(141f / 255, 173f / 255, 170f / 255);
+                color = Control.pathColor;
                 break;
             case GeomType.Path:
-                color = new Color(151f / 255, 152f / 255, 59f / 255);
+                color = Control.pathColor;
                 break;
             case GeomType.NonPath:
                 color = new Color(183f / 255, 175f / 255, 168f / 255);

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 // todo: no falling over, and make it work with Nodes
 public class CharController : MonoBehaviour {
@@ -29,23 +30,38 @@ public class CharController : MonoBehaviour {
 
     private void OnCollisionEnter(Collision collision)
     {
+        Text scoreBoard = GameObject.Find("score").GetComponent<Text>();
+        string scoreBoardString = scoreBoard.text;
+        int result;
+        bool tryIt = int.TryParse(scoreBoardString, out result);
+
         // todo: include some sort of count 
         switch (collision.gameObject.tag)
         {
             case "Prize":
                 //Debug.Log("prize hit");
                 Destroy(collision.collider.gameObject);
+                if (tryIt)
+                {
+                    result += Control.prizeScore;
+                    scoreBoard.text = result.ToString();
+                }
                 break;
             case "FinalPrize":
                 Destroy(collision.collider.gameObject);
+                if (tryIt)
+                {
+                    result += Control.prizeScore * 2;
+                    scoreBoard.text = result.ToString();
+                }
 
-                //Debug.Log("final prize hit");
-                //collision.collider.gameObject.transform.position += new Vector3(0, 1, 0);
-                //collision.collider.gameObject.GetComponent<Rigidbody>;
-                //rigidbody.velocity = Vector3.zero;
-                //rigidbody.angularVelocity = Vector3.zero;
+                // how to "freeze the game"? and maybe do a cool camera zoom lol 
+                GameObject gameOver = GameObject.Find("game over notice");
+                Text text = gameOver.GetComponent<Text>();
+                text.text = "GAME OVER";
 
-                //Destroy(collision.collider.gameObject);
+                Control.isGameOver = true;
+
                 // todo: this is where game over happens 
                 break;
             case "Gate":
@@ -65,22 +81,25 @@ public class CharController : MonoBehaviour {
 	
     void Update()
     {
-        if (Input.anyKeyDown)
+        if(!Control.isGameOver)
         {
-            Movem();
-        }
-
-        // checking if the key button was pressed 
-        if (!keyPos.Equals(new Vector3(-1, -1, -1)))
-        {
-            Vector2 pos = new Vector2(transform.position.x, transform.position.z);
-            Vector2 keyPos2 = new Vector2(keyPos.x, keyPos.z);
-            if (Vector2.Distance(pos, keyPos2) < 0.3) // todo: change this .. to much leeway 
+            if (Input.anyKeyDown)
             {
-                // then do something about the gates ... ok 
-                //Debug.Log("PRESEESSSS");
-                MoveGate();
-                keyButtonPressed = true;
+                Movem();
+            }
+
+            // checking if the key button was pressed 
+            if (!keyPos.Equals(new Vector3(-1, -1, -1)))
+            {
+                Vector2 pos = new Vector2(transform.position.x, transform.position.z);
+                Vector2 keyPos2 = new Vector2(keyPos.x, keyPos.z);
+                if (Vector2.Distance(pos, keyPos2) < 0.3) // todo: change this .. to much leeway 
+                {
+                    // then do something about the gates ... ok 
+                    //Debug.Log("PRESEESSSS");
+                    MoveGate();
+                    keyButtonPressed = true;
+                }
             }
         }
     }
@@ -114,6 +133,7 @@ public class CharController : MonoBehaviour {
 
         Vector3 charDisplacement = new Vector3(0,0,0); 
 
+        // WASE KEYS 
         if (Input.GetKeyDown(KeyCode.W)) // +z 
         {
             potentialDir.Add("plane", new Vector3(0, 0, 1));
@@ -126,7 +146,7 @@ public class CharController : MonoBehaviour {
             potentialDir.Add("realLadderNegZ", new Vector3(0, -.5f, -.5f));
             potentialDir.Add("unrealLadderNegZ", new Vector3(-1, .5f,-1.5f));
         }
-        else if (Input.GetKeyDown(KeyCode.D)) // +x 
+        else if (Input.GetKeyDown(KeyCode.E)) // +x 
         {
             potentialDir.Add("plane", new Vector3(1, 0, 0));
             potentialDir.Add("realLadderPosX", new Vector3(.5f, .5f, 0));
