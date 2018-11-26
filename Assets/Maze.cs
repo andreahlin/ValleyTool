@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum GeomType { Start, Goal, Path, NonPath };
+public enum GeomType { Start, Goal, Path };
 
 public class Maze {
     public static Vector3 posX = new Vector3(1, 0, 0); 
@@ -101,9 +101,7 @@ public class Maze {
                 if (nx >= 0 && nz >= 0 && nx < height && nz < width && ny >= 0 && ny < depth &&
                     grid[nx, ny, nz] == null)
                 {
-                    Vector3 neighNormal = Vector3.Normalize(new Vector3(0,1,0));
                     Node neighNode = new Node(index, "top", new Vector3(nx,ny,nz), posY, new Vector3(0,0,1)); 
-                    // how to tell which direction ????? idk ???? 
 
                     // make them neighbors 
                     JoinNeighbors(curr, neighNode);
@@ -265,7 +263,6 @@ public class Maze {
                                         //ladder.name = "Ladder"; 
 
                                         //make a node there 
-                                        Vector3 neighNormal = Vector3.Normalize(new Vector3(-1, 0, 0));
                                         Node ladderXNode = new Node(0, "negx", worldLadderX, negX, new Vector3(0, 0, -1f));
                                         ladderXNodes.Add(ladderXNode);
 
@@ -345,7 +342,6 @@ public class Maze {
                                         //make a node there 
                                         ladder.name = "z Ladder";
 
-                                        Vector3 neighNormal = Vector3.Normalize(new Vector3(0, 0, -1));
                                         Node ladderZNode = new Node(0, "negz", worldLadderZ, negZ, new Vector3(1, 0, 0));
                                         ladderZNodes.Add(ladderZNode);
 
@@ -354,7 +350,6 @@ public class Maze {
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -444,18 +439,8 @@ public class Maze {
                                             ladder.transform.SetParent(ladderGeom.transform, true);
                                             ladder.name = "x Ladder";
 
-                                            //GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                                            //face.name = "ladderX";
-                                            //face.transform.position = worldLadderX;
-                                            //face.transform.localScale = new Vector3(0.1f, 0.1f, 0.05f);
-                                            //face.transform.localEulerAngles = new Vector3(0, 0, 90); 
-                                            //Renderer rend2 = face.GetComponent<Renderer>();
-                                            //rend2.material.SetColor("_Color", Color.white);
-
                                             //make a node there 
-                                            Vector3 neighNormal = Vector3.Normalize(new Vector3(-1, 0, 0));
                                             Node ladderXNode = new Node(0, "negx", worldLadderX, negX, new Vector3(0, 0, -1f));
-                                            // either add it to ladderXnodes or ladderZnodes
                                             ladderXNodes.Add(ladderXNode);
                                         }
                                     }
@@ -528,23 +513,9 @@ public class Maze {
                                             ladder.transform.SetParent(ladderGeom.transform, true);
                                             ladder.name = "z Ladder";
 
-                                            //GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                                            //face.name = "ladderZ";
-                                            //face.transform.position = worldLadderZ;
-                                            //face.transform.localEulerAngles = new Vector3(-90, 0, 0);
-                                            //face.transform.localScale = new Vector3(.1f, .1f, .1f);
-                                            //Renderer rend2 = face.GetComponent<Renderer>();
-                                            //rend2.material.SetColor("_Color", Color.white);
-
                                             //make a node there 
-                                            Vector3 neighNormal = Vector3.Normalize(new Vector3(0, 0, -1));
                                             Node ladderZNode = new Node(0, "negz", worldLadderZ, negZ, new Vector3(1, 0, 0));
                                             ladderZNodes.Add(ladderZNode);
-
-                                            // really basic visualization 
-                                            //GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                                            //marker.transform.position = worldLadderZ;
-                                            //marker.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
                                         }
                                     }
                                 }
@@ -595,11 +566,6 @@ public class Maze {
                 nodeToThrow = allNodes[i]; 
             }
 
-            // visualize what was thrown away
-            //GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            //marker.transform.position = nodeToThrow.position;
-            //marker.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-
             RemoveNode(nodeToThrow);
             count--; 
 
@@ -625,7 +591,6 @@ public class Maze {
     {
         // remove node from every place it occurred (most importantly, allNodes)  
         bool found = false;
-        List<Node> neighsContainingN = new List<Node>(); 
         foreach (Node curr in allNodes) 
         {
             if (curr.Equals(n)) 
@@ -782,9 +747,6 @@ public class Maze {
             case GeomType.Path:
                 color = Control.pathColor;
                 break;
-            case GeomType.NonPath:
-                color = new Color(183f / 255, 175f / 255, 168f / 255);
-                break;
         }
 
         GameObject face = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -812,9 +774,6 @@ public class Maze {
                 break;
             case GeomType.Path:
                 color = Control.pathColor;
-                break;
-            case GeomType.NonPath:
-                color = new Color(183f / 255, 175f / 255, 168f / 255);
                 break;
         }
 

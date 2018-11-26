@@ -28,9 +28,12 @@ public class Main : MonoBehaviour
     void Start()
     {
         // hide "player panel" visibility  
-        TogglePanelVisibility("playing panel"); 
+        TogglePanelVisibility("playing panel");
 
-        // making a color picker 
+        // set character shader in case a new theme isn't chosen 
+        Renderer rend = GameObject.Find("Character").GetComponent<Renderer>();
+        Shader shader = Shader.Find("Custom/IllusionCharShader");
+        rend.material.shader = shader;
     }
 
     // show/hide panels based on previous state 
@@ -40,7 +43,7 @@ public class Main : MonoBehaviour
         if (playPanel)
         {
             // disable all components
-            bool toReset = false; 
+            bool toReset = false;
             MonoBehaviour[] comps = playPanel.GetComponents<MonoBehaviour>();
             foreach (MonoBehaviour c in comps)
             {
@@ -89,13 +92,13 @@ public class Main : MonoBehaviour
         Control.hasGates = Control.hasGateDefault;
         Control.characterChoice = Control.characterChoiceDefault;
         Control.themeChoice = Control.themeChoiceDefault;
-        Control.jams = Control.jamsDefault; 
+        Control.jams = Control.jamsDefault;
     }
 
     // connected to width slider 
     public void UpdateWidthButton(float i)
     {
-        Control.mazeWidth = (int)i; 
+        Control.mazeWidth = (int)i;
     }
 
     // connected to length slider 
@@ -121,7 +124,7 @@ public class Main : MonoBehaviour
     // connected to gate toggle 
     public void UpdateGateButton(bool b)
     {
-        Control.hasGates = b; 
+        Control.hasGates = b;
     }
 
     public void UpdatePrizeValueButton(string s)
@@ -130,16 +133,96 @@ public class Main : MonoBehaviour
         //string scoreBoardString = scoreBoard.text;
         int result;
         bool tryIt = int.TryParse(s, out result);
-        if (tryIt) 
+        if (tryIt)
         {
             //Debug.Log("changed"); 
             Control.prizeScore = result;
         }
-
     }
 
+    public void UpdateColorPalette(int option)
+    {
+        switch (option)
+        {
+            case 0:
+                Control.charColor = Control.lagoonCharacter;
+                Control.backgroundColor = Control.lagoonBackground;
+                Control.prizeColor = Control.lagoonPrize;
+                Control.pathColor = Control.lagoonPath;
+                Control.gateColor = Control.lagoonGate;
+                break;
+            case 1:
+                Control.charColor = Control.melonCharacter;
+                Control.backgroundColor = Control.melonBackground;
+                Control.prizeColor = Control.melonPrize;
+                Control.pathColor = Control.melonPath;
+                Control.gateColor = Control.melonGate;
+                break;
+            case 2:
+                Control.charColor = Control.pastelCharacter;
+                Control.backgroundColor = Control.pastelBackground;
+                Control.prizeColor = Control.pastelPrize;
+                Control.pathColor = Control.pastelPath;
+                Control.gateColor = Control.pastelGate;
+                break;
+            case 3:
+                Control.charColor = Control.chinaCharacter;
+                Control.backgroundColor = Control.chinaBackground;
+                Control.prizeColor = Control.chinaPrize;
+                Control.pathColor = Control.chinaPath;
+                Control.gateColor = Control.chinaGate;
+                break;
+            case 4:
+                Control.charColor = Control.floraCharacter;
+                Control.backgroundColor = Control.floraBackground;
+                Control.prizeColor = Control.floraPrize;
+                Control.pathColor = Control.floraPath;
+                Control.gateColor = Control.floraGate;
+                break;
+            case 5:
+                Control.charColor = Control.citrusCharacter;
+                Control.backgroundColor = Control.citrusBackground;
+                Control.prizeColor = Control.citrusPrize;
+                Control.pathColor = Control.citrusPath;
+                Control.gateColor = Control.citrusGate;
+                break;
+            default:
+                break;
+        }
 
-    // restart level without changing maze or ladder disribution 
+        // immediately set the background + character color 
+        GameObject.Find("BackgroundPlane").GetComponent<Renderer>().material.SetColor("_Color", Control.backgroundColor);
+        Renderer rend = GameObject.Find("Character").GetComponent<Renderer>();
+        rend.material.SetColor("_Color", Control.charColor);
+        Shader shader = Shader.Find("Custom/IllusionCharShader");
+        rend.material.shader = shader;
+    }
+
+    public void ToggleDebugMode(bool isChecked)
+    {
+        if (isChecked)
+        {
+            VisualizeDebugObjects();
+        }
+        else
+        {
+            EraseDebugObjects();
+        }
+    }
+
+    public void ToggleMouseclickMode(bool canClick)
+    {
+        if (canClick)
+        {
+            Control.mouseclickControls = true;
+        }
+        else
+        {
+            Control.mouseclickControls = false; 
+        }
+    }
+
+    // restart level without changing the maze or ladder distribution 
     public void RestartSameLevel() 
     {
         Control.isGameOver = false;
@@ -216,6 +299,14 @@ public class Main : MonoBehaviour
         text = gameOver.GetComponent<Text>();
         text.text = "0";
 
+        Toggle myToggle = GameObject.Find("debug-toggle").GetComponent<Toggle>();
+        myToggle.isOn = false;
+        myToggle = GameObject.Find("mouseclick-toggle").GetComponent<Toggle>();
+        myToggle.isOn = false;
+
+        // erase debug objects, if they exist
+        EraseDebugObjects();
+
         // clear geometry in: "Maze Geom", "Gate and Key", "Prizes", "Ladder Geometry" 
         GameObject geometry = GameObject.Find("Maze Geometry");
         if (geometry != null)
@@ -269,47 +360,32 @@ public class Main : MonoBehaviour
         TogglePanelVisibility("playing panel");
     }
 
-    // todo 
-    public void toggleDebugMode()
-    {
-        //if (allNodes.Count > 0)
-        //{
-        //    if (GameObject.Find("DebugGeom").chil) 
-        //    {
-
-        //    }
-        //}
-    }
-
-    // todo: use this somewhere i guess 
     public void EraseDebugObjects() 
     {
         foreach (Node n in allNodes) 
         {
-            Destroy(n.geom.gameObject); // todo never tested 
+            if (n.geom != null)
+            {
+                Destroy(n.geom.gameObject);
+           }
         }
     }
 
+    public void VisualizeDebugObjects()
+    {
+        // guaranteed to only be called once so it's fine
+        foreach (Node node in allNodes)
+        {
+            node.StartDebugVis(cam);
+        }
+    }
 
-    // todo: call in "generatethelevel" function ? 
-    // todo: maybe won't use multiple scenes 
+    // not used
     public void ChangeToScene(string sceneToChangeTo)
     {
         SceneManager.LoadScene(sceneToChangeTo);
 
     }
-
-    public void ChangeToSampleScene()
-    {
-        SceneManager.LoadScene("SampleScene");
-
-    }
-
-    public void ChangeToGameScene() 
-    {
-        SceneManager.LoadScene("Scene2");
-    }
-
 
     // length, width, numkeys, gate/no gate, "theme"... i guess
     public void GenerateTheLevelButton() 
@@ -416,6 +492,9 @@ public class Main : MonoBehaviour
         TogglePanelVisibility("start panel");
         TogglePanelVisibility("playing panel");
 
+        // fade the message
+        Text text = GameObject.Find("key-control-notice").GetComponent<Text>();
+        text.CrossFadeAlpha(0.0f, 3f, false);
     }
     ////////////////////////////////////////////////////////////////////////////////////
 
@@ -423,21 +502,22 @@ public class Main : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Used for (debug) Character Movement    
-        if (Input.GetMouseButtonDown(0))
+        if (Control.mouseclickControls) 
         {
-            if (playerScript)
+            // Used for (debug) Character Movement    
+            if (Input.GetMouseButtonDown(0))
             {
-                playerScript.SetTargetPosition(allNodes);
-                if (playerScript.currNode != null && playerScript.targetNode != null) 
+                if (playerScript)
                 {
-                    List<Node> path = g.AStar(playerScript.currNode, playerScript.targetNode);
-                    // USE THAT TO DIRECT THE PATH OF THE CHARACTER
-                    playerScript.WalkAlongPath(path);
-
+                    playerScript.SetTargetPosition(allNodes);
+                    if (playerScript.currNode != null && playerScript.targetNode != null)
+                    {
+                        List<Node> path = g.AStar(playerScript.currNode, playerScript.targetNode);
+                        // USE THAT TO DIRECT THE PATH OF THE CHARACTER
+                        playerScript.WalkAlongPath(path);
+                    }
                 }
             }
-
         }
     }
 
@@ -450,7 +530,7 @@ public class Main : MonoBehaviour
             gateGeom.name = "Gate and Key";
         }
 
-        Color buttonCol = new Color(36 / 255f, 56 / 255f, 36 / 255f);
+        //Color buttonCol = new Color(36 / 255f, 56 / 255f, 36 / 255f);
 
         // potentially 2 gates  
         Vector3 gateX = goalPos + new Vector3(-1, 0, 0);
@@ -514,17 +594,12 @@ public class Main : MonoBehaviour
 
     public bool MakeKey()
     {
-        // todo: do some pathfinding to make sure that you can find the key!!  IDK MAN 
-
         GameObject gateGeom = GameObject.Find("Gate and Key");
         if (gateGeom == null)
         {
             gateGeom = new GameObject();
             gateGeom.name = "Gate and Key";
         }
-
-        Color buttonCol = new Color(36 / 255f, 56 / 255f, 36 / 255f);
-
         List<Node> nodesToRestoreNeighs = new List<Node>(); 
 
         // make a temp graph to check if the button can be reached 
@@ -640,7 +715,7 @@ public class Main : MonoBehaviour
             Debug.Log("allNodes is empty, cannot make prizes");
             return false; 
         }
-        Color prizeCol = new Color(171 / 255f, 0 / 255f, 0 / 255f);
+
         // Big prize (on goal node) 
         GameObject finalPrize = GameObject.CreatePrimitive(PrimitiveType.Cube);
         finalPrize.transform.position = goalPos + new Vector3(0,1,0) * 0.5f;

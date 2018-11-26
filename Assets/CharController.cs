@@ -11,19 +11,18 @@ public class CharController : MonoBehaviour {
     Quaternion playerRot;
     public float rotSpeed = 5f;
     public float speed = 1f;
-    bool moving = false;
-    Rigidbody rb;
+    public bool moving = false;
+    public Rigidbody rb;
 
-    bool keyButtonPressed = false; 
+    public bool keyButtonPressed = false; 
 
     // SENT BY THE MAIN CLASS TO BE CONTROLLED OVER HERE .. OK? 
     public Vector3 keyPos = new Vector3(-1,-1,-1);
     public GameObject gate1 = null;
     public GameObject gate2 = null; 
 
-    Vector3 forward = new Vector3(0, 0, 1);
-    Vector3 right = new Vector3(1, 0, 0);
-
+    public static Vector3 forward = new Vector3(0, 0, 1);
+    public static Vector3 right = new Vector3(1, 0, 0);
 
     public Node currNode; // the node that the character is currently associated with
     public Node targetNode; // the node that the character is closest to from the click 
@@ -85,7 +84,7 @@ public class CharController : MonoBehaviour {
         {
             if (Input.anyKeyDown)
             {
-                Movem();
+                Movement();
             }
 
             // checking if the key button was pressed 
@@ -123,14 +122,11 @@ public class CharController : MonoBehaviour {
         }
     }
 
-    void Movem()
+    void Movement()
     {
-        // todo: check if the next step is a gate !!!!! 
-
         bool move = false;
         Node newCurr = null;
         Dictionary<string, Vector3> potentialDir = new Dictionary<string, Vector3>();
-
         Vector3 charDisplacement = new Vector3(0,0,0); 
 
         // WASE KEYS 
@@ -158,6 +154,7 @@ public class CharController : MonoBehaviour {
             potentialDir.Add("realLadderNegX", new Vector3(-.5f, -.5f, 0));
             potentialDir.Add("unrealLadderNegX", new Vector3(-1.5f, .5f, -1));
         }
+
         foreach (KeyValuePair<string, Vector3> pair in potentialDir)
         {
             if (currNode != null)
@@ -224,7 +221,6 @@ public class CharController : MonoBehaviour {
                                 Debug.Log("didn't find a direction... BUG ooo:");
                                 return;
                         }
-
                         move = true;
                         newCurr = n;
                     }
@@ -237,18 +233,6 @@ public class CharController : MonoBehaviour {
             AssignCurrNode(newCurr);
         }
     }
-
-
-    bool CanWalk(Vector3 direction) 
-    {
-        // well you should always be on a node ? i guess so? 
-        // what to check: if you are <0.5 from any given node
-        // NEEDS TO BE A NODE BASED SYS??????AJGJSLKDGJ:LAJ
-        // check: for gates  
-        return true; 
-    }
-
-
 
     public void AssignFirstCurrNode(List<Node> nodesInScene)
     {
@@ -341,7 +325,7 @@ public class CharController : MonoBehaviour {
             targetPosition = hit.point;
 
             lookTarget = new Vector3(targetPosition.x - transform.position.x,
-                                     transform.position.y, // shouldn't this ensure that the rotation doesn't change for the y axis?
+                                     transform.position.y,
                                      targetPosition.z - transform.position.z);
             playerRot = Quaternion.LookRotation(lookTarget);
 
@@ -363,7 +347,6 @@ public class CharController : MonoBehaviour {
                 }
             }
         }
-
         // debug vis for clicked Node
         // color the closest Node from mouse click (todo: get rid of debugvis) 
         //GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
