@@ -34,6 +34,12 @@ public class Main : MonoBehaviour
         Renderer rend = GameObject.Find("Character").GetComponent<Renderer>();
         Shader shader = Shader.Find("Custom/IllusionCharShader");
         rend.material.shader = shader;
+
+        // begin at the intro scene (only show once) 
+        if (Control.firstLanding)
+        {
+            SceneManager.LoadScene("Menu");
+        }
     }
 
     // show/hide panels based on previous state 
@@ -378,6 +384,8 @@ public class Main : MonoBehaviour
         {
             node.StartDebugVis(cam);
         }
+
+        // todo: bring char back to a fixed position? 
     }
 
     // not used
@@ -385,6 +393,11 @@ public class Main : MonoBehaviour
     {
         SceneManager.LoadScene(sceneToChangeTo);
 
+    }
+
+    public void ChangeToGameScene()
+    {
+        SceneManager.LoadScene("Scene 2");
     }
 
     // length, width, numkeys, gate/no gate, "theme"... i guess
@@ -471,14 +484,14 @@ public class Main : MonoBehaviour
         }
 
         // assign neighbors to nodes automatically
-        foreach (Node node in allNodes)
-        {
-            // todo: commetn back in ?  
-            //node.FindGeomNeighbors(allNodes, cam);
-            //node.FindIllusionNeighbors(allNodes, cam);
+        //foreach (Node node in allNodes)
+        //{
+        //    // todo: commetn back in ?  
+        //    //node.FindGeomNeighbors(allNodes, cam);
+        //    //node.FindIllusionNeighbors(allNodes, cam);
 
-            //node.StartDebugVis(cam);
-        }
+        //    //node.StartDebugVis(cam);
+        //}
 
         // referencing the character variable todo idk if this should be here ? 
         thePlayer = GameObject.Find("Character");
@@ -494,7 +507,7 @@ public class Main : MonoBehaviour
 
         // fade the message
         Text text = GameObject.Find("key-control-notice").GetComponent<Text>();
-        text.CrossFadeAlpha(0.0f, 3f, false);
+        text.CrossFadeAlpha(0.0f, 4f, false);
     }
     ////////////////////////////////////////////////////////////////////////////////////
 

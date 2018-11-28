@@ -1,12 +1,13 @@
 ﻿<Properties StartupConfiguration="{60702674-21F7-D2AC-29BC-7E59A47513C2}|">
   <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="Unity.Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Main.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Menu.cs">
     <Files>
-      <File FileName="Assets/Main.cs" Line="286" Column="14" />
-      <File FileName="Assets/Maze.cs" Line="780" Column="1" />
-      <File FileName="Assets/CharController.cs" Line="150" Column="10" />
-      <File FileName="Assets/Node.cs" Line="16" Column="34" />
-      <File FileName="Assets/Control.cs" Line="31" Column="20" />
+      <File FileName="Assets/Main.cs" Line="13" Column="5" />
+      <File FileName="Assets/Maze.cs" Line="785" Column="14" />
+      <File FileName="Assets/CharController.cs" Line="19" Column="24" />
+      <File FileName="Assets/Node.cs" Line="81" Column="47" />
+      <File FileName="Assets/Control.cs" Line="6" Column="5" />
+      <File FileName="Assets/Menu.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
