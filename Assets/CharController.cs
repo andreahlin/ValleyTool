@@ -57,7 +57,9 @@ public class CharController : MonoBehaviour {
                 // how to "freeze the game"? and maybe do a cool camera zoom lol 
                 GameObject gameOver = GameObject.Find("game over notice");
                 Text text = gameOver.GetComponent<Text>();
-                text.text = "GAME OVER";
+                text.text = "game over";
+                text.CrossFadeAlpha(0.0f, .001f, false);
+                text.CrossFadeAlpha(1.0f, 1f, false);
 
                 Control.isGameOver = true;
 
@@ -80,7 +82,20 @@ public class CharController : MonoBehaviour {
 	
     void Update()
     {
-        if(!Control.isGameOver)
+        if (!Control.isGameOver)
+        {
+            // controls the timer 
+            Control.timer += Time.deltaTime / 2f;
+            int minutes = Mathf.FloorToInt(Control.timer / 60F);
+            int seconds = Mathf.FloorToInt(Control.timer - minutes * 60);
+            string niceTime = string.Format("{0:0}:{1:00}", minutes, seconds);
+            if (GameObject.Find("timer") != null) 
+            {
+                GameObject.Find("timer").GetComponent<Text>().text = niceTime; 
+            }
+        }
+
+        if (!Control.isGameOver)
         {
             if (Input.anyKeyDown)
             {

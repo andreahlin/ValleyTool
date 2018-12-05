@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Control : MonoBehaviour {
 
@@ -15,7 +16,6 @@ public class Control : MonoBehaviour {
     public static bool hasGates = false;
     public static int characterChoice;
     public static int themeChoice;
-    public static int jams; // ? 
 
     // default used for resetting game 
     public const int mazeLengthDefault = 2;
@@ -26,7 +26,6 @@ public class Control : MonoBehaviour {
     public const bool hasGateDefault = false;
     public const int characterChoiceDefault = 0;
     public const int themeChoiceDefault = 0;
-    public const int jamsDefault = 0; // ? 
 
     // "designer" controls during gameplay 
     public static bool mouseclickControls = false;
@@ -34,7 +33,9 @@ public class Control : MonoBehaviour {
 
     // "player" scorekeeping
     public static int playerScore = 0;
-    public static bool isGameOver = false; 
+    public static bool isGameOver = true;
+    public static float timer = 0.0f;
+    //public static Text timerText = GameObject.Find("timer").GetComponent<Text>();
 
     // color options 
     public static Color lagoonCharacter = new Color(171 / 255f, 123 / 255f, 27 / 255f);
@@ -70,7 +71,7 @@ public class Control : MonoBehaviour {
 
     // todo: not used 
     public static Color desertCharacter = new Color(166 / 255f, 160 / 255f, 144 / 255f);
-    public static Color desertPrize = new Color(214 / 255f, 74 / 255f, 53 / 255f);//new Color(170 / 255f, 124 / 255f, 91 / 255f);
+    public static Color desertPrize = new Color(214 / 255f, 74 / 255f, 53 / 255f);
     public static Color desertPath = new Color(111 / 255f, 109 / 255f, 80 / 255f);
     public static Color desertGate = new Color(162 / 255f, 165 / 255f, 138 / 255f);
     public static Color desertBackground = new Color(180 / 255f, 110 / 255f, 90 / 255f);
@@ -88,15 +89,4 @@ public class Control : MonoBehaviour {
     public static Color pathColor = lagoonPath;
     public static Color gateColor = lagoonGate;
 
-    // todo: add timer??? 
-
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }

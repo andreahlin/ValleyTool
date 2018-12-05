@@ -98,7 +98,6 @@ public class Main : MonoBehaviour
         Control.hasGates = Control.hasGateDefault;
         Control.characterChoice = Control.characterChoiceDefault;
         Control.themeChoice = Control.themeChoiceDefault;
-        Control.jams = Control.jamsDefault;
     }
 
     // connected to width slider 
@@ -116,7 +115,8 @@ public class Main : MonoBehaviour
     // connected to ladder slider 
     public void UpdateLadderButton(float i)
     {
-        Control.numLadders = (int)i;
+        int totalSquares = Control.mazeWidth * Control.mazeLength / 3; // how many ladders could there be? 
+        Control.numLadders = (int) (i * totalSquares);
     }
 
     // connect to prize slider 
@@ -124,7 +124,8 @@ public class Main : MonoBehaviour
     {
         // (todo: slider best option ? how to resize based on the size of the maze?)
         // set the slider max based on the length/width of the maze, maybe
-        Control.numPrizes = (int)i;
+        int totalSquares = Control.mazeWidth * Control.mazeLength / 2; 
+        Control.numPrizes = (int) (i * totalSquares);
     }
 
     // connected to gate toggle 
@@ -286,6 +287,8 @@ public class Main : MonoBehaviour
         gameOver = GameObject.Find("score");
         text = gameOver.GetComponent<Text>();
         text.text = "0";
+        //GameObject.Find("timer").GetComponent<Text>().text = "";
+        Control.timer = 0;
 
         // restart the first node char is on 
         thePlayer = GameObject.Find("Character");
@@ -304,6 +307,9 @@ public class Main : MonoBehaviour
         gameOver = GameObject.Find("score");
         text = gameOver.GetComponent<Text>();
         text.text = "0";
+
+        //GameObject.Find("timer").GetComponent<Text>().text = "";
+        Control.timer = 0;
 
         Toggle myToggle = GameObject.Find("debug-toggle").GetComponent<Toggle>();
         myToggle.isOn = false;
@@ -395,9 +401,14 @@ public class Main : MonoBehaviour
 
     }
 
-    public void ChangeToGameScene()
+    public void RemoveInformationalButton()
     {
-        SceneManager.LoadScene("Scene 2");
+        // fade the message
+        if (GameObject.Find("key-control-notice"))
+        {
+            Text keyNotice = GameObject.Find("key-control-text").GetComponent<Text>();
+            keyNotice.CrossFadeAlpha(0.0f, .5f, false);
+        }
     }
 
     // length, width, numkeys, gate/no gate, "theme"... i guess
@@ -504,10 +515,6 @@ public class Main : MonoBehaviour
         // show the play panel and hide the other panel 
         TogglePanelVisibility("start panel");
         TogglePanelVisibility("playing panel");
-
-        // fade the message
-        Text text = GameObject.Find("key-control-notice").GetComponent<Text>();
-        text.CrossFadeAlpha(0.0f, 4f, false);
     }
     ////////////////////////////////////////////////////////////////////////////////////
 
