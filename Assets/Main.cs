@@ -24,6 +24,8 @@ public class Main : MonoBehaviour
     GameObject gateObjX;
     GameObject gateObjZ;
 
+    public List<GameObject> pathObjects = new List<GameObject>(); 
+
     // Use this for initialization
     void Start()
     {
@@ -100,6 +102,23 @@ public class Main : MonoBehaviour
         Control.themeChoice = Control.themeChoiceDefault;
     }
 
+    // connected to designer control button
+    public void UpdateDesignerControl()
+    {
+        GameObject designerPanel = GameObject.Find("designer-controls");
+        RectTransform rectTrans = designerPanel.GetComponent<RectTransform>();
+        if (Control.showingDesignerControl) 
+        {
+            rectTrans.anchoredPosition = new Vector2(-172, -520); 
+        }
+        else 
+        {
+            rectTrans.anchoredPosition = new Vector2(-172, -140);
+
+        }
+        Control.showingDesignerControl = !Control.showingDesignerControl;
+    }
+
     // connected to width slider 
     public void UpdateWidthButton(float i)
     {
@@ -115,15 +134,13 @@ public class Main : MonoBehaviour
     // connected to ladder slider 
     public void UpdateLadderButton(float i)
     {
-        int totalSquares = Control.mazeWidth * Control.mazeLength / 3; // how many ladders could there be? 
+        int totalSquares = Control.mazeWidth * Control.mazeLength / 3;
         Control.numLadders = (int) (i * totalSquares);
     }
 
     // connect to prize slider 
     public void UpdatePrizeButton(float i)
     {
-        // (todo: slider best option ? how to resize based on the size of the maze?)
-        // set the slider max based on the length/width of the maze, maybe
         int totalSquares = Control.mazeWidth * Control.mazeLength / 2; 
         Control.numPrizes = (int) (i * totalSquares);
     }
@@ -136,13 +153,10 @@ public class Main : MonoBehaviour
 
     public void UpdatePrizeValueButton(string s)
     {
-        //Text scoreBoard = GameObject.Find("score").GetComponent<Text>();
-        //string scoreBoardString = scoreBoard.text;
         int result;
         bool tryIt = int.TryParse(s, out result);
         if (tryIt)
         {
-            //Debug.Log("changed"); 
             Control.prizeScore = result;
         }
     }
@@ -225,14 +239,31 @@ public class Main : MonoBehaviour
         }
         else
         {
+            //ErasePathObjects();
             Control.mouseclickControls = false; 
         }
     }
+
+    //public void TogglePathTestingMode(bool canClick)
+    //{
+    //    if (canClick)
+    //    {
+    //        Control.pathTestingControls = true;
+    //    }
+    //    else
+    //    {
+    //        ErasePathObjects();
+    //        Control.pathTestingControls = false; 
+    //    }
+    //}
 
     // restart level without changing the maze or ladder distribution 
     public void RestartSameLevel() 
     {
         Control.isGameOver = false;
+        ErasePathObjects();
+        Toggle myToggle = GameObject.Find("mouseclick-toggle").GetComponent<Toggle>();
+        myToggle.isOn = false;
 
         // put char back at (0,0,0)
         thePlayer.transform.position = new Vector3(0, thePlayer.transform.localScale.y * 0.5f, 0); 
@@ -308,8 +339,11 @@ public class Main : MonoBehaviour
         text = gameOver.GetComponent<Text>();
         text.text = "0";
 
-        //GameObject.Find("timer").GetComponent<Text>().text = "";
         Control.timer = 0;
+
+        GameObject designerPanel = GameObject.Find("designer-controls");
+        RectTransform rectTrans = designerPanel.GetComponent<RectTransform>();
+        rectTrans.anchoredPosition = new Vector2(-172, -520);
 
         Toggle myToggle = GameObject.Find("debug-toggle").GetComponent<Toggle>();
         myToggle.isOn = false;
@@ -318,6 +352,8 @@ public class Main : MonoBehaviour
 
         // erase debug objects, if they exist
         EraseDebugObjects();
+        ErasePathObjects();
+        //Control.pathTestingControls = false;
 
         // clear geometry in: "Maze Geom", "Gate and Key", "Prizes", "Ladder Geometry" 
         GameObject geometry = GameObject.Find("Maze Geometry");
@@ -380,6 +416,22 @@ public class Main : MonoBehaviour
             {
                 Destroy(n.geom.gameObject);
            }
+        }
+    }
+
+    public void ErasePathObjects()
+    {
+        GameObject g = GameObject.Find("PathObjects");
+        if (g != null)
+        {
+            for (int i = 0; i < g.transform.childCount; i++)
+            {
+                var child = g.transform.GetChild(i).gameObject;
+                if (child != null)
+                {
+                    Destroy(child.gameObject); 
+                }
+            }
         }
     }
 
@@ -529,12 +581,14 @@ public class Main : MonoBehaviour
             {
                 if (playerScript)
                 {
-                    playerScript.SetTargetPosition(allNodes);
-                    if (playerScript.currNode != null && playerScript.targetNode != null)
+                    if (playerScript.SetTargetPosition(allNodes))
                     {
-                        List<Node> path = g.AStar(playerScript.currNode, playerScript.targetNode);
-                        // USE THAT TO DIRECT THE PATH OF THE CHARACTER
-                        playerScript.WalkAlongPath(path);
+                        if (playerScript.currNode != null && playerScript.targetNode != null)
+                        {
+                            List<Node> path = g.AStar(playerScript.currNode, playerScript.targetNode);
+                            // USE THAT TO DIRECT THE PATH OF THE CHARACTER
+                            playerScript.WalkAlongPath(path);
+                        }
                     }
                 }
             }

@@ -59,7 +59,7 @@ public class CharController : MonoBehaviour {
                 Text text = gameOver.GetComponent<Text>();
                 text.text = "game over";
                 text.CrossFadeAlpha(0.0f, .001f, false);
-                text.CrossFadeAlpha(1.0f, 1f, false);
+                text.CrossFadeAlpha(1.0f, 0.5f, false);
 
                 Control.isGameOver = true;
 
@@ -147,24 +147,29 @@ public class CharController : MonoBehaviour {
         // WASE KEYS 
         if (Input.GetKeyDown(KeyCode.W)) // +z 
         {
+            ErasePathObjects(); // erase any objects made by mouseclicks 
+
             potentialDir.Add("plane", new Vector3(0, 0, 1));
             potentialDir.Add("realLadderPosZ", new Vector3(0, .5f, .5f));
             potentialDir.Add("unrealLadderPosZ", new Vector3(1, -.5f, 1.5f));
         }
         else if (Input.GetKeyDown(KeyCode.S)) // -z 
         {
+            ErasePathObjects(); // erase any objects made by mouseclicks 
             potentialDir.Add("plane", new Vector3(0, 0, -1));
             potentialDir.Add("realLadderNegZ", new Vector3(0, -.5f, -.5f));
             potentialDir.Add("unrealLadderNegZ", new Vector3(-1, .5f,-1.5f));
         }
         else if (Input.GetKeyDown(KeyCode.E)) // +x 
         {
+            ErasePathObjects(); // erase any objects made by mouseclicks 
             potentialDir.Add("plane", new Vector3(1, 0, 0));
             potentialDir.Add("realLadderPosX", new Vector3(.5f, .5f, 0));
             potentialDir.Add("unrealLadderPosX", new Vector3(1.5f, -.5f, 1));
         }
         else if (Input.GetKeyDown(KeyCode.A)) // -x 
         {
+            ErasePathObjects(); // erase any objects made by mouseclicks 
             potentialDir.Add("plane", new Vector3(-1, 0, 0));
             potentialDir.Add("realLadderNegX", new Vector3(-.5f, -.5f, 0));
             potentialDir.Add("unrealLadderNegX", new Vector3(-1.5f, .5f, -1));
@@ -281,13 +286,39 @@ public class CharController : MonoBehaviour {
         currNode = n; //lame
     }
 
+    public void ErasePathObjects()
+    {
+        GameObject g = GameObject.Find("PathObjects");
+        if (g != null)
+        {
+            for (int i = 0; i < g.transform.childCount; i++)
+            {
+                var child = g.transform.GetChild(i).gameObject;
+                if (child != null)
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+        }
+    }
 
     public void WalkAlongPath(List<Node> path)
     {
+        ErasePathObjects();
+
         foreach (Node nextNode in path)
         {
             if (!nextNode.Equals(path[0])) 
             {
+                // make a gameobject
+                GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                visPos.transform.position = nextNode.position;
+                visPos.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                Renderer rend = visPos.GetComponent<Renderer>();
+                rend.material.SetColor("_Color", Color.black);
+                GameObject parent = GameObject.Find("PathObjects");
+                visPos.transform.SetParent(parent.transform, true);
+
                 Vector3 truePos = nextNode.position + nextNode.up * 0.25f;
                 while (!(Vector3.Distance(transform.position, truePos) < 0.01f))
                 {
@@ -306,7 +337,7 @@ public class CharController : MonoBehaviour {
         }
     }
 
-   public IEnumerator WalkAlongPath2(List<Node> path)
+    public IEnumerator WalkAlongPath2(List<Node> path)
     {
         foreach (Node nextNode in path)
         {
@@ -331,8 +362,9 @@ public class CharController : MonoBehaviour {
         }
     }
 
-    public void SetTargetPosition(List<Node> nodesInScene) {
+    public bool SetTargetPosition(List<Node> nodesInScene) {
         // raycasting to find the position of mouseclick 
+        bool nodeHit = false;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, 10000))
@@ -357,11 +389,14 @@ public class CharController : MonoBehaviour {
             {
                 if (dist < closestDist)
                 {
+                    nodeHit = true; 
                     targetNode = n;
                     closestDist = dist;
                 }
             }
         }
+
+        return nodeHit;
         // debug vis for clicked Node
         // color the closest Node from mouse click (todo: get rid of debugvis) 
         //GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);

@@ -29,13 +29,13 @@ public class Control : MonoBehaviour {
 
     // "designer" controls during gameplay 
     public static bool mouseclickControls = false;
-    //public static bool debugMode = false;
+    //public static bool pathTestingControls = false;
+    public static bool showingDesignerControl = false;
 
     // "player" scorekeeping
     public static int playerScore = 0;
     public static bool isGameOver = true;
     public static float timer = 0.0f;
-    //public static Text timerText = GameObject.Find("timer").GetComponent<Text>();
 
     // color options 
     public static Color lagoonCharacter = new Color(171 / 255f, 123 / 255f, 27 / 255f);
@@ -57,17 +57,16 @@ public class Control : MonoBehaviour {
     public static Color chinaGate = new Color(84 / 255f, 84 / 255f, 84 / 255f);
 
     public static Color pastelCharacter = new Color(220 / 255f, 117 / 255f, 137 / 255f);
-    public static Color pastelBackground = new Color(223 / 255f, 175 / 255f, 161 / 255f);//new Color(241 / 255f, 198 / 255f, 196 / 255f);
+    public static Color pastelBackground = new Color(223 / 255f, 175 / 255f, 161 / 255f);
     public static Color pastelPrize = new Color(241 / 255f, 198 / 255f, 196 / 255f);
     public static Color pastelPath = new Color(170 / 255f, 168 / 255f, 192 / 255f); 
     public static Color pastelGate = new Color(255 / 255f, 175 / 255f, 175 / 255f);
 
-    // real flora o: 
     public static Color floraCharacter = new Color(91 / 255f, 145 / 255f, 135 / 255f);
     public static Color floraPrize = new Color(214 / 255f, 74 / 255f, 53 / 255f);
-    public static Color floraPath = new Color(224 / 255f, 163 / 255f, 156 / 255f);  //new Color(246 / 255f, 191 / 255f, 184 / 255f);224 163 156 
+    public static Color floraPath = new Color(224 / 255f, 163 / 255f, 156 / 255f);
     public static Color floraGate = new Color( 160/ 255f,45 / 255f, 37/ 255f);
-    public static Color floraBackground = new Color(173 / 255f, 207 / 255f, 207 / 255f); //new Color( 120/ 255f, 188/ 255f, 175/ 255f); 173 207 207
+    public static Color floraBackground = new Color(173 / 255f, 207 / 255f, 207 / 255f);
 
     // todo: not used 
     public static Color desertCharacter = new Color(166 / 255f, 160 / 255f, 144 / 255f);
@@ -88,5 +87,4 @@ public class Control : MonoBehaviour {
     public static Color prizeColor = lagoonPrize;
     public static Color pathColor = lagoonPath;
     public static Color gateColor = lagoonGate;
-
 }
