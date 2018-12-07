@@ -239,23 +239,9 @@ public class Main : MonoBehaviour
         }
         else
         {
-            //ErasePathObjects();
             Control.mouseclickControls = false; 
         }
     }
-
-    //public void TogglePathTestingMode(bool canClick)
-    //{
-    //    if (canClick)
-    //    {
-    //        Control.pathTestingControls = true;
-    //    }
-    //    else
-    //    {
-    //        ErasePathObjects();
-    //        Control.pathTestingControls = false; 
-    //    }
-    //}
 
     // restart level without changing the maze or ladder distribution 
     public void RestartSameLevel() 
@@ -353,7 +339,6 @@ public class Main : MonoBehaviour
         // erase debug objects, if they exist
         EraseDebugObjects();
         ErasePathObjects();
-        //Control.pathTestingControls = false;
 
         // clear geometry in: "Maze Geom", "Gate and Key", "Prizes", "Ladder Geometry" 
         GameObject geometry = GameObject.Find("Maze Geometry");
@@ -576,7 +561,6 @@ public class Main : MonoBehaviour
     {
         if (Control.mouseclickControls) 
         {
-            // Used for (debug) Character Movement    
             if (Input.GetMouseButtonDown(0))
             {
                 if (playerScript)

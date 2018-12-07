@@ -364,7 +364,6 @@ public class CharController : MonoBehaviour {
 
     public bool SetTargetPosition(List<Node> nodesInScene) {
         // raycasting to find the position of mouseclick 
-        bool nodeHit = false;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, 10000))
@@ -389,14 +388,13 @@ public class CharController : MonoBehaviour {
             {
                 if (dist < closestDist)
                 {
-                    nodeHit = true; 
                     targetNode = n;
                     closestDist = dist;
                 }
             }
         }
-
-        return nodeHit;
+        if (currNode.Equals(targetNode)) return false;
+        else return true;
         // debug vis for clicked Node
         // color the closest Node from mouse click (todo: get rid of debugvis) 
         //GameObject visPos = GameObject.CreatePrimitive(PrimitiveType.Sphere);
